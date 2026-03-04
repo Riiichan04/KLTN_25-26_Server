@@ -34,11 +34,11 @@ dependencies {
 
 	//For Hibernate/JPA ORM
 	api(libs.org.hibernate.orm)
-
-	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
+	//For jwt
+	implementation(libs.jjwt.api)
+	runtimeOnly(libs.jjwt.impl)
+	runtimeOnly(libs.jjwt.jackson)
+	//For cloudinary
 	implementation (libs.cloudinary)
 	implementation (libs.cloudinary.http5)
 
@@ -47,6 +47,7 @@ dependencies {
 	implementation(libs.springboot.starter)
 	implementation(libs.spring.boot.starter.data.jpa)
 	implementation(libs.spring.boot.starter.web)
+	implementation(libs.spring.boot.starter.security)
 
 	testImplementation(libs.org.junit.jupiter.junit.jupiter.api)
 	testImplementation(libs.org.junit.jupiter.junit.jupiter.engine)

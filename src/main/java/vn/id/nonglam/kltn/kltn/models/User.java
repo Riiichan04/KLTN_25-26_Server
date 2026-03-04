@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.model;
+package vn.id.nonglam.kltn.kltn.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.common.enums.Gender;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Table(name = "users")
@@ -53,8 +53,16 @@ public class User {
     private boolean isVerified;
 
     @Column(name = "created_at")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        // FIXME: add default avatar url later.
+        avatarUrl = "";
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
 }

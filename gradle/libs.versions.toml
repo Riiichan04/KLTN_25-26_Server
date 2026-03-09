@@ -22,6 +22,9 @@ org-hibernate-orm = "7.2.0.CR3" #Hibernate
 # For cloudinary
 cloudinary = "2.3.2"
 
+# For jwt
+jjwt = "0.11.5"
+
 # Libraries definition
 [libraries]
 springboot-starter = {module = "org.springframework.boot:spring-boot-starter", version.ref = "springboot-stater" }
@@ -29,7 +32,7 @@ spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-b
 spring-boot-starter-mail = { group = "org.springframework.boot", name = "spring-boot-starter-mail", version.ref = "springboot-stater" }
 spring-boot-starter-thymeleaf = { group = "org.springframework.boot", name = "spring-boot-starter-thymeleaf", version.ref = "springboot-stater" }
 spring-boot-starter-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa", version.ref = "springboot-stater" }
-
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 com-google-code-gson-gson = { module = "com.google.code.gson:gson", version.ref = "com-google-code-gson-gson" }
 
 mysql-mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysql-mysql-connector-java" }
@@ -51,3 +54,7 @@ cloudinary-http5 = { module = "com.cloudinary:cloudinary-http5", version.ref = "
 #jakarta-servlet-jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakarta-servlet-jakarta-servlet-api" }
 #jakarta-servlet-jsp-jstl-jakarta-servlet-jsp-jstl-api = { module = "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api", version.ref = "jakarta-servlet-jsp-jstl-jakarta-servlet-jsp-jstl-api" }
 #org-glassfish-web-jakarta-servlet-jsp-jstl = { module = "org.glassfish.web:jakarta.servlet.jsp.jstl", version.ref = "org-glassfish-web-jakarta-servlet-jsp-jstl" }
+
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }

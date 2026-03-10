@@ -8,7 +8,7 @@ import vn.id.nonglam.kltn.kltn.dto.request.auth.LoginRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.RegisterRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.auth.AuthDto;
 import vn.id.nonglam.kltn.kltn.dto.response.auth.AuthResponse;
-import vn.id.nonglam.kltn.kltn.models.User;
+import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 import vn.id.nonglam.kltn.kltn.security.JwtTokenProvider;
 import vn.id.nonglam.kltn.kltn.security.PasswordEncryption;

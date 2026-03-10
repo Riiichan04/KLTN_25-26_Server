@@ -9,35 +9,19 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Table(name = "comments")
+@Table(name = "utilities")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment {
+public class RoomUtility {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id")
-    private Hotel hotel;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @Column(nullable = false)
-    private String content;
-
     @Column
-    private double rating;
-
-    @Column(nullable = true)
-    private UUID parentId;
-
-    @Column
-    private boolean isActive;
+    private String name;
 
     @Column
     private LocalDateTime createdAt;

@@ -1,0 +1,62 @@
+package vn.id.nonglam.kltn.kltn.models;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.Set;
+import java.util.UUID;
+
+@Table(name = "room_types")
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoomType {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column
+    private String name;
+
+    @Column
+    private String description;
+
+    @Column
+    private int capacity;
+
+    @Column
+    private double price;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "room_utilities_details",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "room_utility_id")
+    )
+    private Set<RoomUtility> utilities;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name  = "hotel_id")
+    private Hotel hotel;
+
+    @Column
+    private boolean isActive;
+
+    @Column
+    private LocalDate createdAt;
+
+    @Column
+    private LocalDate updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDate.now();
+        this.updatedAt = LocalDate.now();
+    }
+}

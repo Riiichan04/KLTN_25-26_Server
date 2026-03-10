@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.models;
+package vn.id.nonglam.kltn.kltn.models.hotel;
 
 import jakarta.persistence.*;
 import lombok.*;

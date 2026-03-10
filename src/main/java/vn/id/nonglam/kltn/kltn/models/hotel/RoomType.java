@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.models;
+package vn.id.nonglam.kltn.kltn.models.hotel;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,7 +36,7 @@ public class RoomType {
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "room_utilities_details",
-            joinColumns = @JoinColumn(name = "room_id"),
+            joinColumns = @JoinColumn(name = "room_type_id"),
             inverseJoinColumns = @JoinColumn(name = "room_utility_id")
     )
     private Set<RoomUtility> utilities;
@@ -44,6 +44,9 @@ public class RoomType {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name  = "hotel_id")
     private Hotel hotel;
+
+    @Column
+    private double depositedPercent;
 
     @Column
     private boolean isActive;

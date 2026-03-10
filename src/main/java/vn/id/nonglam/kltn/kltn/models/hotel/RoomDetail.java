@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.models;
+package vn.id.nonglam.kltn.kltn.models.hotel;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,37 +9,26 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Table(name = "addresses")
+@Table(name = "room_details")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address {
+public class RoomDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column
-    private String street;
+    private String roomCode;
+
+    @ManyToOne
+    @JoinColumn(name = "room_type_id")
+    private RoomType roomType;
 
     @Column
-    private String ward;
-
-    @Column
-    private String province;
-
-    @Column
-    private int postalCode;
-
-    @Column
-    private double latitude;
-
-    @Column
-    private double longitude;
-
-    @Column
-    private boolean active;
+    private boolean isActive;
 
     @Column
     private LocalDateTime createdAt;
@@ -52,4 +41,5 @@ public class Address {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
 }

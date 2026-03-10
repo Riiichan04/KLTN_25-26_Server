@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.models;
+package vn.id.nonglam.kltn.kltn.models.hotel;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,13 +9,13 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Table(name = "hotel_utilities")
+@Table(name = "utilities")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HotelUtility {
+public class RoomUtility {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

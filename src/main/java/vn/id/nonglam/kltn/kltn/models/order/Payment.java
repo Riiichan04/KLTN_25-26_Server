@@ -1,43 +1,35 @@
-package vn.id.nonglam.kltn.kltn.models;
+package vn.id.nonglam.kltn.kltn.models.order;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Table(name = "comments")
+@Table(name = "payments")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment {
+public class Payment {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id")
-    private Hotel hotel;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @Column(nullable = false)
-    private String content;
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     @Column
-    private double rating;
-
-    @Column(nullable = true)
-    private UUID parentId;
+    private double amount;
 
     @Column
-    private boolean isActive;
+    private PaymentStatus status;
 
     @Column
     private LocalDateTime createdAt;
@@ -47,7 +39,7 @@ public class Comment {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

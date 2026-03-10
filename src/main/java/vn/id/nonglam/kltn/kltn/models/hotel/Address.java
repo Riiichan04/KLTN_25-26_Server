@@ -39,7 +39,7 @@ public class Address {
     private double longitude;
 
     @Column
-    private boolean active;
+    private boolean isActive;
 
     @Column
     private LocalDateTime createdAt;

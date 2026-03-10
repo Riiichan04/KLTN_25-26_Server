@@ -46,7 +46,7 @@ public class Hotel {
             joinColumns = @JoinColumn(name = "hotel_id"),
             inverseJoinColumns = @JoinColumn(name = "hotel_utility_id")
     )
-    Set<HotelUtility> utilities;
+    private Set<HotelUtility> utilities;
 
     @Column
     private int viewCount;

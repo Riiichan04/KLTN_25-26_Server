@@ -5,18 +5,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.id.nonglam.kltn.kltn.common.enums.PaymentMethod;
+import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
-@Table(name = "payments")
+@Table(name = "order_details")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Payment {
+public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -25,21 +25,16 @@ public class Payment {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @Column
-    private double amount;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_detail_id")
+    private RoomDetail roomDetail;
 
     @Column
-    private PaymentMethod method;
+    private double actualPrice;
 
     @Column
-    private LocalDateTime createdAt;
+    private LocalDate checkInDate;
 
     @Column
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
+    private LocalDate checkOutDate;
 }

@@ -1,5 +1,6 @@
 package vn.id.nonglam.kltn.kltn.models.hotel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -32,10 +33,17 @@ public class Hotel {
     @Column
     private String description;
 
+    @Column
+    private String thumbnail;
+
     @OneToOne
     @JoinColumn(name = "address_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Address address;
+
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("hotel")
+    private Set<RoomType> roomTypes;
 
     @Column(nullable = true)
     private String hotline;
@@ -47,6 +55,10 @@ public class Hotel {
             inverseJoinColumns = @JoinColumn(name = "hotel_utility_id")
     )
     private Set<HotelUtility> utilities;
+
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("hotel")
+    private Set<Comment> comments;
 
     @Column
     private int viewCount;

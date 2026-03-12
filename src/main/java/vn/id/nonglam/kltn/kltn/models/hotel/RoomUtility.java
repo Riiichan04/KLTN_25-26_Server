@@ -24,6 +24,9 @@ public class RoomUtility {
     private String name;
 
     @Column
+    private boolean isActive;
+
+    @Column
     private LocalDateTime createdAt;
 
     @Column

@@ -1,7 +1,5 @@
 package vn.id.nonglam.kltn.kltn.dto;
 
-import vn.id.nonglam.kltn.kltn.models.hotel.Address;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -31,8 +29,9 @@ public class SearchDTO {
         }
     }
 
-    public record SearchHotelDTO(UUID id, String name, String thumbnail, Address address,
-                                 String description, int viewCount, double avgRating, int totalComment,
-                                 double minPrice, double maxPrice) {}
+    public record SearchHotelResponse(UUID id, String name, String thumbnail, String street, String ward,
+                                      String province, double latitude, double longitude,
+                                      String description, int viewCount, double avgRating, int totalComment,
+                                      double minPrice, double maxPrice) {}
 }
 

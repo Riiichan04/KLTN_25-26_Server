@@ -23,20 +23,25 @@ public class VerificationService {
 
     private int limitAttempt = LIMIT_ATTEMPT;
     private int otpLength = DEFAULT_OTP_LENGTH;
+
     private final VerificationRepository verificationRepository;
     private final UserRepository userRepository;
+    private final MailService mailService;
 
     @Autowired
-    public VerificationService(VerificationRepository verificationRepository, UserRepository userRepository) {
+    public VerificationService(VerificationRepository verificationRepository, UserRepository userRepository, MailService mailService) {
         this.verificationRepository = verificationRepository;
         this.userRepository = userRepository;
+        this.mailService = mailService;
     }
 
-    public VerificationService(int limitAttempt, int otpLength, VerificationRepository verificationRepository, UserRepository userRepository) {
+
+    public VerificationService(int limitAttempt, int otpLength, VerificationRepository verificationRepository, UserRepository userRepository, MailService mailService) {
         this.limitAttempt = limitAttempt;
         this.otpLength = otpLength;
         this.verificationRepository = verificationRepository;
         this.userRepository = userRepository;
+        this.mailService = mailService;
     }
 
     @Transactional
@@ -68,6 +73,7 @@ public class VerificationService {
             verificationRepository.save(savedVerification);
 
             //Send mail
+            mailService.sendOtpEmail(email, otp);
             return new GenerateVerifyResponse(true, "Sent verification code successfully. Check your email to get your verification code.");
         }
         catch (Exception e) {

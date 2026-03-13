@@ -1,6 +1,4 @@
-package vn.id.nonglam.kltn.kltn.dto.response.common;
-
-import vn.id.nonglam.kltn.kltn.dto.response.auth.AuthDto;
+package vn.id.nonglam.kltn.kltn.dto.response.comments;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

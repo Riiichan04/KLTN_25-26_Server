@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vn.id.nonglam.kltn.kltn.common.enums.CommentSentiment;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 
 import java.time.LocalDateTime;
@@ -36,6 +37,10 @@ public class Comment {
 
     @Column(nullable = true)
     private UUID parentId;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private CommentSentiment sentiment;
 
     @Column
     private boolean isActive;

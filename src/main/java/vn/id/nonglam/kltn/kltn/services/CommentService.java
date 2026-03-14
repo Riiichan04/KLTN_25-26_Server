@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import vn.id.nonglam.kltn.kltn.common.enums.CommentSentiment;
+import vn.id.nonglam.kltn.kltn.common.utils.UserUtil;
 import vn.id.nonglam.kltn.kltn.dto.request.comments.SentimentRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.comments.UpdateCommentRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.comments.CommentResponse;
@@ -19,7 +20,9 @@ import vn.id.nonglam.kltn.kltn.dto.request.comments.InsertCommentRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.comments.SentimentResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.common.ServiceResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Comment;
+import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 import vn.id.nonglam.kltn.kltn.repositories.CommentRepository;
+import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
 import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 
 import java.util.Objects;
@@ -30,6 +33,7 @@ import java.util.UUID;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final HotelRepository hotelRepository;
     private final RestClient restClient;
 
     @Value("${app.model-server-url}")
@@ -37,9 +41,10 @@ public class CommentService {
     private final static String PATH_URL = "/comments/sentiment/";
 
     @Autowired
-    public CommentService(CommentRepository commentRepository, UserRepository userRepository) {
+    public CommentService(CommentRepository commentRepository, UserRepository userRepository, HotelRepository hotelRepository) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
+        this.hotelRepository = hotelRepository;
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
         factory.setReadTimeout(5000);
@@ -57,8 +62,11 @@ public class CommentService {
     public ServiceResponse insertComments(InsertCommentRequest input) {
         try {
             Comment comment = new Comment();
-            //FIXME: Get hotel here
-//        comment.setHotel();
+            Hotel hotel = hotelRepository.getHotelById(input.hotelId());
+            if (hotel == null) {
+                return new ServiceResponse(false, "Hotel not found");
+            }
+            comment.setHotel(hotel);
             comment.setUser(userRepository.findUserById(input.userId()));
             comment.setContent(input.content());
             comment.setRating(input.rating());
@@ -118,7 +126,7 @@ public class CommentService {
                 comment.getId(),
                 comment.getContent(),
                 comment.getRating(),
-                //Get author here
+                UserUtil.convertUserToUserDTO(comment.getUser()),
                 comment.getUpdatedAt()
         );
     }

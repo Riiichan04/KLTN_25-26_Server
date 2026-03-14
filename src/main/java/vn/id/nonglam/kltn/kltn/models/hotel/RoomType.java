@@ -1,5 +1,6 @@
 package vn.id.nonglam.kltn.kltn.models.hotel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,6 +45,10 @@ public class RoomType {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name  = "hotel_id")
     private Hotel hotel;
+
+    @OneToMany(mappedBy = "roomType", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("roomType")
+    private Set<RoomTypeImage> images;
 
     @Column
     private double depositedPercent;

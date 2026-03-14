@@ -17,7 +17,7 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/hotels")
-    public ResponseEntity<Page<SearchDTO.SearchHotelDTO>> searchHotels(
+    public ResponseEntity<Page<SearchDTO.SearchHotelResponse>> searchHotels(
             @RequestParam(required = false) String keyWord,
             @RequestParam(required = false) List<Double> extentAddress,
             @RequestParam int type,

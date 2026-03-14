@@ -14,23 +14,23 @@ import java.util.List;
 public class SearchService {
     private final HotelRepository hotelRepository;
 
-    public Page<SearchDTO.SearchHotelDTO> searchHotels(String keyWord, List<Double> extentAddressRequest,
-                                                       int type, Integer minRating,
-                                                       Double minPrice, Double maxPrice,
-                                                       Pageable pageable) {
-        Page<SearchDTO.SearchHotelDTO> hotels = Page.empty();
+    public Page<SearchDTO.SearchHotelResponse> searchHotels(String keyWord, List<Double> extentAddressRequest,
+                                                            int type, Integer minRating,
+                                                            Double minPrice, Double maxPrice,
+                                                            Pageable pageable) {
+        Page<SearchDTO.SearchHotelResponse> hotels = Page.empty();
         /**
          * If type = 0, search by key word
          * If type = 1, search by coordinates
          * */
         if(type == 0 && keyWord != null && !keyWord.isEmpty()) {
-            hotels = hotelRepository.findHotelsByExtentAddress(keyWord, null,
+            hotels = hotelRepository.findHotels(keyWord, null,
                     null, null, null, minRating, minPrice, maxPrice, pageable);
         }
         else if(type == 1 && extentAddressRequest != null && !extentAddressRequest.isEmpty()) {
             if(extentAddressRequest.size() == 4) {
                 SearchDTO.ExtentAddressRequest addressRequest = new SearchDTO.ExtentAddressRequest(extentAddressRequest);
-                hotels = hotelRepository.findHotelsByExtentAddress(null, addressRequest.getMinLongitudeExtent(),
+                hotels = hotelRepository.findHotels(null, addressRequest.getMinLongitudeExtent(),
                         addressRequest.getMinLatitudeExtent(),
                         addressRequest.getMaxLongitudeExtent(),
                         addressRequest.getMaxLatitudeExtent(), minRating, minPrice, maxPrice,pageable);
@@ -39,7 +39,7 @@ public class SearchService {
                 SearchDTO.CoordinatesRequest addressRequest = new SearchDTO.CoordinatesRequest(extentAddressRequest);
                 double[] minAndMaxCoordinates = calMinMaxLatitudeAndLongitude(addressRequest.getLatitude(),
                         addressRequest.getLongitude(), 5);
-                hotels = hotelRepository.findHotelsByExtentAddress(null, minAndMaxCoordinates[0],
+                hotels = hotelRepository.findHotels(null, minAndMaxCoordinates[0],
                         minAndMaxCoordinates[1], minAndMaxCoordinates[2],
                         minAndMaxCoordinates[3], minRating, minPrice, maxPrice, pageable);
 

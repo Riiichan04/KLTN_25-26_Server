@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import vn.id.nonglam.kltn.kltn.dto.SearchDTO;
+import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
 import vn.id.nonglam.kltn.kltn.services.SearchService;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/hotels")
-    public ResponseEntity<Page<SearchDTO.SearchHotelResponse>> searchHotels(
+    public ResponseEntity<Page<SearchHotelResponse>> searchHotels(
             @RequestParam(required = false) String keyWord,
             @RequestParam(required = false) List<Double> extentAddress,
             @RequestParam int type,

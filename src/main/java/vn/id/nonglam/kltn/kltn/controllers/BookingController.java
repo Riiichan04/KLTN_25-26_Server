@@ -23,4 +23,9 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getRoomDetailsValid(hotelId, startDate, endDate));
     }
 
+    @PostMapping("/create-order")
+    public ResponseEntity<OrderDTO.OrderResponse> createOrder(@RequestBody OrderDTO.OrderRequest request) {
+        return ResponseEntity.ok(bookingService.createOrder(request));
+    }
+
 }

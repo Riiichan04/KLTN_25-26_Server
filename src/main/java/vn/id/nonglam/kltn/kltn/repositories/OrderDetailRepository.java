@@ -12,9 +12,9 @@ import java.util.UUID;
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, UUID> {
     @Query("""
         SELECT (count(o) = 0) FROM OrderDetail o LEFT JOIN o.order order
-        WHERE order.orderStatus != 'CANCELLED' AND o.roomDetail.id = :roomDetailId
-        AND o.checkInDate < :endDate
-        AND o.checkOutDate  > :startDate
+        WHERE order.orderStatus != vn.id.nonglam.kltn.kltn.common.enums.OrderStatus.CANCELLED AND o.roomDetail.id = :roomDetailId
+        AND order.checkInDate < :endDate
+        AND order.checkOutDate  > :startDate
     """)
     boolean checkValidRoomDetail(UUID roomDetailId, LocalDateTime startDate, LocalDateTime endDate);
 

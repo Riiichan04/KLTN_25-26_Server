@@ -1,0 +1,13 @@
+package vn.id.nonglam.kltn.kltn.dto;
+
+import java.util.List;
+import java.util.UUID;
+
+public class OrderDTO {
+    public record RoomDetailSnapShotResponse(UUID id, String code, boolean valid) {}
+
+    public record RoomDetailValidResponse(UUID roomTypeId, String name,
+                                          List<RoomDetailSnapShotResponse> data) {}
+
+    public record OrderResponse() {}
+}

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,6 +50,10 @@ public class RoomType {
     @OneToMany(mappedBy = "roomType", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("roomType")
     private Set<RoomTypeImage> images;
+
+    @OneToMany(mappedBy = "roomType", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("roomType")
+    private List<RoomDetail> roomDetails;
 
     @Column
     private double depositedPercent;

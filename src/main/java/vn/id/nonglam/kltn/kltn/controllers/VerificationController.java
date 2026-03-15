@@ -1,0 +1,47 @@
+package vn.id.nonglam.kltn.kltn.controllers;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import vn.id.nonglam.kltn.kltn.common.enums.VerificationType;
+import vn.id.nonglam.kltn.kltn.dto.request.auth.VerifyRequest;
+import vn.id.nonglam.kltn.kltn.dto.response.auth.VerifyResponse;
+import vn.id.nonglam.kltn.kltn.services.VerificationService;
+
+@RestController
+@RequestMapping("/verify")
+public class VerificationController {
+    private final VerificationService verificationService;
+
+    @Autowired
+    public VerificationController(VerificationService verificationService) {
+        this.verificationService = verificationService;
+    }
+
+    @PostMapping("/send/reset-password")
+    public ResponseEntity<VerifyResponse> sendResetPassword(@RequestBody String email) {
+        VerifyResponse response = verificationService.sendVerificationCode(email, VerificationType.RESET_PASSWORD);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/send/account")
+    public ResponseEntity<VerifyResponse> sendVerifyAccount(@RequestBody String email) {
+        VerifyResponse response = verificationService.sendVerificationCode(email, VerificationType.VERIFY_USER);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<VerifyResponse> resetPassword(@RequestBody VerifyRequest request) {
+        VerifyResponse response = verificationService.verifyResetPassword(request.email(), request.code(), request.newPassword());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/account")
+    public ResponseEntity<VerifyResponse> verifyAccount(@RequestBody VerifyRequest request) {
+        VerifyResponse response = verificationService.verifyUser(request.email(), request.code());
+        return ResponseEntity.ok(response);
+    }
+}

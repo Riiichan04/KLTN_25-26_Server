@@ -37,13 +37,16 @@ public class Order {
     private OrderStatus orderStatus;
 
     @Column
-    private double totalPrice;
-
-    @Column
     private String note;
 
     @Column
     private PaymentStatus paymentStatus;
+
+    @Column
+    private LocalDateTime checkInDate;
+
+    @Column
+    private LocalDateTime checkOutDate;
 
     @Column
     private LocalDateTime createdAt;

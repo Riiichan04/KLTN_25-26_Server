@@ -1,12 +1,15 @@
 package vn.id.nonglam.kltn.kltn.models.hotel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vn.id.nonglam.kltn.kltn.models.order.OrderDetail;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Table(name = "room_details")
@@ -26,6 +29,10 @@ public class RoomDetail {
     @ManyToOne
     @JoinColumn(name = "room_type_id")
     private RoomType roomType;
+
+    @OneToMany(mappedBy = "roomDetail", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("roomDetail")
+    private List<OrderDetail> orderDetails;
 
     @Column
     private boolean isActive;

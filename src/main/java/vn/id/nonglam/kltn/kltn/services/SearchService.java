@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import vn.id.nonglam.kltn.kltn.dto.SearchDTO;
+import vn.id.nonglam.kltn.kltn.dto.request.search.CoordinatesRequest;
+import vn.id.nonglam.kltn.kltn.dto.request.search.ExtentAddressRequest;
+import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
 import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
 
 import java.util.List;
@@ -14,11 +16,11 @@ import java.util.List;
 public class SearchService {
     private final HotelRepository hotelRepository;
 
-    public Page<SearchDTO.SearchHotelResponse> searchHotels(String keyWord, List<Double> extentAddressRequest,
-                                                            int type, Integer minRating,
-                                                            Double minPrice, Double maxPrice,
-                                                            Pageable pageable) {
-        Page<SearchDTO.SearchHotelResponse> hotels = Page.empty();
+    public Page<SearchHotelResponse> searchHotels(String keyWord, List<Double> extentAddressRequest,
+                                                  int type, Integer minRating,
+                                                  Double minPrice, Double maxPrice,
+                                                  Pageable pageable) {
+        Page<SearchHotelResponse> hotels = Page.empty();
         /**
          * If type = 0, search by key word
          * If type = 1, search by coordinates
@@ -29,14 +31,14 @@ public class SearchService {
         }
         else if(type == 1 && extentAddressRequest != null && !extentAddressRequest.isEmpty()) {
             if(extentAddressRequest.size() == 4) {
-                SearchDTO.ExtentAddressRequest addressRequest = new SearchDTO.ExtentAddressRequest(extentAddressRequest);
+                ExtentAddressRequest addressRequest = new ExtentAddressRequest(extentAddressRequest);
                 hotels = hotelRepository.findHotels(null, addressRequest.getMinLongitudeExtent(),
                         addressRequest.getMinLatitudeExtent(),
                         addressRequest.getMaxLongitudeExtent(),
                         addressRequest.getMaxLatitudeExtent(), minRating, minPrice, maxPrice,pageable);
             }
             else if(extentAddressRequest.size() == 2) {
-                SearchDTO.CoordinatesRequest addressRequest = new SearchDTO.CoordinatesRequest(extentAddressRequest);
+                CoordinatesRequest addressRequest = new CoordinatesRequest(extentAddressRequest);
                 double[] minAndMaxCoordinates = calMinMaxLatitudeAndLongitude(addressRequest.getLatitude(),
                         addressRequest.getLongitude(), 5);
                 hotels = hotelRepository.findHotels(null, minAndMaxCoordinates[0],

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import vn.id.nonglam.kltn.kltn.dto.SearchDTO;
+import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 
 import java.util.UUID;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     @Query("""
-    SELECT new vn.id.nonglam.kltn.kltn.dto.SearchDTO.SearchHotelResponse(
+    SELECT new vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse(
         h.id, h.name, h.thumbnail, h.address.street, h.address.ward, h.address.province, 
         h.address.latitude, h.address.longitude, h.description, h.viewCount,
         COALESCE(avg(c.rating), 0.0), COALESCE(size(h.comments), 0), 
@@ -31,10 +31,10 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
     ORDER BY COALESCE(avg(c.rating), 0.0) desc 
 """)
-    Page<SearchDTO.SearchHotelResponse> findHotels(String keyWord,
-                                                       Double minLongitude, Double minLatitude,
-                                                       Double maxLongitude, Double maxLatitude,
-                                                       Integer minRating, Double minPrice, Double maxPrice, Pageable pageable
+    Page<SearchHotelResponse> findHotels(String keyWord,
+                                         Double minLongitude, Double minLatitude,
+                                         Double maxLongitude, Double maxLatitude,
+                                         Integer minRating, Double minPrice, Double maxPrice, Pageable pageable
     );
 
     @EntityGraph(attributePaths = {"address", "roomTypes", "roomTypes.images", "roomTypes.utilities", "utilities"})

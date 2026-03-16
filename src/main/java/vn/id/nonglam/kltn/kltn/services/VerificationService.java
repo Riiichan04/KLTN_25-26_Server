@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.id.nonglam.kltn.kltn.common.enums.VerificationType;
-import vn.id.nonglam.kltn.kltn.dto.response.auth.GenerateVerifyResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.auth.VerifyResponse;
 import vn.id.nonglam.kltn.kltn.models.auth.Verification;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
@@ -45,22 +45,22 @@ public class VerificationService {
     }
 
     @Transactional
-    public GenerateVerifyResponse sendVerificationCode(String email, VerificationType type) {
+    public VerifyResponse sendVerificationCode(String email, VerificationType type) {
         try {
             // Does user exists
             User user = userRepository.findByEmail(email);
             if (user == null) {
-                return new GenerateVerifyResponse(false, "User not found");
+                return new VerifyResponse(false, "User not found");
             }
             // Does user verified if type = VERIFY_USER
             if (type == VerificationType.VERIFY_USER && user.isVerified()) {
-                return new GenerateVerifyResponse(false, "User is already verified");
+                return new VerifyResponse(false, "User is already verified");
             }
             // Does user have active otp at the same time
             Verification existVerification = verificationRepository.getByEmail(email);
             if (existVerification != null) {
                 if (existVerification.getExpiredAt().isAfter(LocalDateTime.now()) && existVerification.getType() == type ) {
-                    return new GenerateVerifyResponse(false, "You already have verification code");
+                    return new VerifyResponse(false, "You already have verification code");
                 }
             }
 
@@ -74,62 +74,62 @@ public class VerificationService {
 
             //Send mail
             mailService.sendOtpEmail(email, otp);
-            return new GenerateVerifyResponse(true, "Sent verification code successfully. Check your email to get your verification code.");
+            return new VerifyResponse(true, "Sent verification code successfully. Check your email to get your verification code.");
         }
         catch (Exception e) {
-            return new GenerateVerifyResponse(false, "Failed when generating verification code");
+            return new VerifyResponse(false, "Failed when generating verification code");
         }
     }
 
     @Transactional
-    public GenerateVerifyResponse verifyUser(String email, String otp) {
+    public VerifyResponse verifyUser(String email, String otp) {
         try {
             User targetUser = userRepository.findByEmail(email);
             if (email == null) {
-                return new GenerateVerifyResponse(false, "User not found");
+                return new VerifyResponse(false, "User not found");
             }
 
-            GenerateVerifyResponse verifyResult = this.verifyCode(email, otp, VerificationType.VERIFY_USER);
+            VerifyResponse verifyResult = this.verifyCode(email, otp, VerificationType.VERIFY_USER);
             if (verifyResult.result()) {
                 targetUser.setVerified(true);
             }
             return verifyResult;
         }
         catch (Exception e) {
-            return new GenerateVerifyResponse(false, "Failed when verifying user");
+            return new VerifyResponse(false, "Failed when verifying user");
         }
     }
 
     @Transactional
-    public GenerateVerifyResponse verifyResetPassword(String email, String otp, String newPassword) {
+    public VerifyResponse verifyResetPassword(String email, String otp, String newPassword) {
         try {
             User targetUser = userRepository.findByEmail(email);
             if (email == null) {
-                return new GenerateVerifyResponse(false, "User not found");
+                return new VerifyResponse(false, "User not found");
             }
 
-            GenerateVerifyResponse verifyResult = this.verifyCode(email, otp, VerificationType.RESET_PASSWORD);
+            VerifyResponse verifyResult = this.verifyCode(email, otp, VerificationType.RESET_PASSWORD);
             if (verifyResult.result()) {
                 targetUser.setPassword(PasswordEncryption.hashPassword(newPassword));
             }
             return verifyResult;
         }
         catch (Exception e) {
-            return new GenerateVerifyResponse(false, "Failed when reset your password");
+            return new VerifyResponse(false, "Failed when reset your password");
         }
     }
 
-    private GenerateVerifyResponse verifyCode(String email, String otpCode, VerificationType type) {
+    private VerifyResponse verifyCode(String email, String otpCode, VerificationType type) {
         try {
             //Get current verification by email and type
             Verification targetVerification = verificationRepository.getByEmailAndType(email, type);
             if (targetVerification == null) {
-                return new GenerateVerifyResponse(false, "Verification code not found");
+                return new VerifyResponse(false, "Verification code not found");
             }
             //Check attempt
             if (targetVerification.getAttempts() >= this.limitAttempt) {
                 verificationRepository.delete(targetVerification);
-                return new GenerateVerifyResponse(
+                return new VerifyResponse(
                         false,
                         "Maximum number of authentication attempts exceeded. Please request new verification code"
                 );
@@ -137,18 +137,18 @@ public class VerificationService {
             //Check expired time
             if (targetVerification.getExpiredAt().isAfter(LocalDateTime.now())) {
                 verificationRepository.delete(targetVerification);
-                return new GenerateVerifyResponse(false, "Verification code expired");
+                return new VerifyResponse(false, "Verification code expired");
             }
 
             if (!targetVerification.getCode().equals(otpCode)) {
-                return new GenerateVerifyResponse(false, "Verification code does not match");
+                return new VerifyResponse(false, "Verification code does not match");
             }
             //Success
             verificationRepository.delete(targetVerification);
-            return new GenerateVerifyResponse(true, "Verified successfully");
+            return new VerifyResponse(true, "Verified successfully");
         }
         catch (Exception e) {
-            return new GenerateVerifyResponse(false, "Failed when verifying code");
+            return new VerifyResponse(false, "Failed when verifying code");
         }
     }
 

@@ -22,14 +22,14 @@ public class VerificationController {
     }
 
     @PostMapping("/send/reset-password")
-    public ResponseEntity<VerifyResponse> sendResetPassword(@RequestBody String email) {
-        VerifyResponse response = verificationService.sendVerificationCode(email, VerificationType.RESET_PASSWORD);
+    public ResponseEntity<VerifyResponse> sendResetPassword(@RequestBody VerifyRequest request) {
+        VerifyResponse response = verificationService.sendVerificationCode(request.email(), VerificationType.RESET_PASSWORD);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/send/account")
-    public ResponseEntity<VerifyResponse> sendVerifyAccount(@RequestBody String email) {
-        VerifyResponse response = verificationService.sendVerificationCode(email, VerificationType.VERIFY_USER);
+    public ResponseEntity<VerifyResponse> sendVerifyAccount(@RequestBody VerifyRequest request) {
+        VerifyResponse response = verificationService.sendVerificationCode(request.email(), VerificationType.VERIFY_USER);
         return ResponseEntity.ok(response);
     }
 

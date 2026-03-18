@@ -59,12 +59,16 @@ public class VerificationService {
             // Does user have active otp at the same time
             Verification existVerification = verificationRepository.getByEmail(email);
             if (existVerification != null) {
-                if (existVerification.getExpiredAt().isAfter(LocalDateTime.now()) && existVerification.getType() == type ) {
+                if (existVerification.getExpiredAt().isAfter(LocalDateTime.now()) && existVerification.getType() == type) {
                     return new VerifyResponse(false, "You already have verification code");
                 }
             }
 
             //Create new verification code
+            if (existVerification != null) {
+                verificationRepository.delete(existVerification);
+            }
+
             String otp = generateOTP(this.otpLength);
             Verification savedVerification = new Verification();
             savedVerification.setEmail(email);
@@ -75,8 +79,8 @@ public class VerificationService {
             //Send mail
             mailService.sendOtpEmail(email, otp);
             return new VerifyResponse(true, "Sent verification code successfully. Check your email to get your verification code.");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            log.error(e.getMessage());
             return new VerifyResponse(false, "Failed when generating verification code");
         }
     }
@@ -85,7 +89,7 @@ public class VerificationService {
     public VerifyResponse verifyUser(String email, String otp) {
         try {
             User targetUser = userRepository.findByEmail(email);
-            if (email == null) {
+            if (targetUser == null) {
                 return new VerifyResponse(false, "User not found");
             }
 
@@ -94,8 +98,8 @@ public class VerificationService {
                 targetUser.setVerified(true);
             }
             return verifyResult;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            log.error(e.getMessage());
             return new VerifyResponse(false, "Failed when verifying user");
         }
     }
@@ -104,7 +108,7 @@ public class VerificationService {
     public VerifyResponse verifyResetPassword(String email, String otp, String newPassword) {
         try {
             User targetUser = userRepository.findByEmail(email);
-            if (email == null) {
+            if (targetUser == null) {
                 return new VerifyResponse(false, "User not found");
             }
 
@@ -113,8 +117,8 @@ public class VerificationService {
                 targetUser.setPassword(PasswordEncryption.hashPassword(newPassword));
             }
             return verifyResult;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            log.error(e.getMessage());
             return new VerifyResponse(false, "Failed when reset your password");
         }
     }
@@ -135,19 +139,23 @@ public class VerificationService {
                 );
             }
             //Check expired time
-            if (targetVerification.getExpiredAt().isAfter(LocalDateTime.now())) {
+            if (targetVerification.getExpiredAt().isBefore(LocalDateTime.now())) {
                 verificationRepository.delete(targetVerification);
                 return new VerifyResponse(false, "Verification code expired");
             }
 
             if (!targetVerification.getCode().equals(otpCode)) {
+                if (targetVerification.getType() == VerificationType.VERIFY_USER) {
+                    targetVerification.setAttempts(targetVerification.getAttempts() + 1);
+                    verificationRepository.save(targetVerification);
+                }
                 return new VerifyResponse(false, "Verification code does not match");
             }
             //Success
             verificationRepository.delete(targetVerification);
             return new VerifyResponse(true, "Verified successfully");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            log.error(e.getMessage());
             return new VerifyResponse(false, "Failed when verifying code");
         }
     }

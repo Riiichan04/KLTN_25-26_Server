@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import vn.id.nonglam.kltn.kltn.dto.HotelDTO;
 import vn.id.nonglam.kltn.kltn.models.hotel.*;
+import vn.id.nonglam.kltn.kltn.repositories.CommentRepository;
 import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
 
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HotelService {
     private final HotelRepository hotelRepository;
+    private final CommentRepository commentRepository;
 
     public HotelDTO.HotelDetailResponse getHotelById(UUID id) {
         Hotel hotel = hotelRepository.getHotelById(id);
@@ -22,10 +24,11 @@ public class HotelService {
     }
 
     private HotelDTO.HotelDetailResponse mapper(Hotel h) {
-        return new HotelDTO.HotelDetailResponse(h.getId(), h.getName(), h.getDescription(),
+        return new HotelDTO.HotelDetailResponse(h.getId(), h.getName(), commentRepository.countByHotelIdAndActiveTrue(h.getId()),
+                commentRepository.avgRatingByHotelId(h.getId()), h.getDescription(),
                 h.getThumbnail(), mapperAddress(h.getAddress()), mapperRoomType(h.getRoomTypes()),
                 h.getHotline(), mapperHotelUtility(h.getUtilities()),
-                h.getViewCount(), h.getStatus());
+                h.getViewCount(), h.getStatus(), mapperHotelRegulation(h.getRegulations()));
     }
 
     private HotelDTO.AddressResponse mapperAddress(Address address) {
@@ -42,7 +45,7 @@ public class HotelService {
     }
 
     private Set<HotelDTO.RoomUtilityResponse> mapperRoomUtility(Set<RoomUtility> roomUtilities) {
-        return roomUtilities.stream().map(u -> new HotelDTO.RoomUtilityResponse(u.getId(), u.getName())).collect(Collectors.toSet());
+        return roomUtilities.stream().map(u -> new HotelDTO.RoomUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toSet());
     }
 
     private Set<HotelDTO.RoomTypeImageResponse> mapperRoomTypeImage(Set<RoomTypeImage> roomTypeImages) {
@@ -51,6 +54,10 @@ public class HotelService {
 
     private Set<HotelDTO.HotelUtilityResponse> mapperHotelUtility(Set<HotelUtility> hotelUtilities) {
         return hotelUtilities.stream().map(u -> new HotelDTO.HotelUtilityResponse(u.getId(), u.getName())).collect(Collectors.toSet());
+    }
+
+    private Set<HotelDTO.HotelRegulationResponse> mapperHotelRegulation(Set<HotelRegulation> hotelRegulations) {
+        return hotelRegulations.stream().map(r -> new HotelDTO.HotelRegulationResponse(r.getId(), r.getName(), r.getDescription())).collect(Collectors.toSet());
     }
 
 }

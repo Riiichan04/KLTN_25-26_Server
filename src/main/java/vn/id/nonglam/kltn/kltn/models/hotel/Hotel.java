@@ -60,6 +60,10 @@ public class Hotel {
     @JsonIgnoreProperties("hotel")
     private Set<Comment> comments;
 
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("hotel")
+    private Set<HotelRegulation> regulations;
+
     @Column
     private int viewCount;
 

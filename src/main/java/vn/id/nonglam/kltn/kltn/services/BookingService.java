@@ -49,6 +49,9 @@ public class BookingService {
         UUID userId = SecurityUtil.currentUserId().orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
 
+        if(orderRequest.checkin().isBefore(LocalDateTime.now()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date");
+
         if(orderRequest.checkin().isAfter(orderRequest.checkout()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Checkin date must before checkout date!");
 

@@ -6,7 +6,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public class HotelDTO {
-    public record RoomUtilityResponse(UUID id, String name) {}
+    public record HotelRegulationResponse(UUID id, String name, String description) {}
+
+    public record RoomUtilityResponse(UUID id, String name, String iconCode) {}
     
     public record RoomTypeImageResponse(UUID id, String url) {}
     
@@ -18,9 +20,9 @@ public class HotelDTO {
 
     public record HotelUtilityResponse(UUID id, String name) {}
 
-    public record HotelDetailResponse(UUID id, String name, String description, String thumbnail,
+    public record HotelDetailResponse(UUID id, String name, int countComments, double avgRating, String description, String thumbnail,
                                       AddressResponse address, Set<RoomTypeResponse> roomTypes,
                                       String hotline, Set<HotelUtilityResponse> hotelUtilities,
-                                      int viewCount, HotelStatus status) {}
+                                      int viewCount, HotelStatus status, Set<HotelRegulationResponse> hotelRegulations) {}
     
 }

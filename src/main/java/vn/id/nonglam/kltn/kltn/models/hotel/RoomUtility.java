@@ -23,6 +23,9 @@ public class RoomUtility {
     @Column
     private String name;
 
+    @Column(name = "icon_code")
+    private String iconCode;
+
     @Column
     private boolean isActive;
 

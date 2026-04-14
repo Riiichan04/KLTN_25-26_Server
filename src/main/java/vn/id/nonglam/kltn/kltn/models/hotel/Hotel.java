@@ -45,6 +45,10 @@ public class Hotel {
     @JsonIgnoreProperties("hotel")
     private Set<RoomType> roomTypes;
 
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("hotel")
+    private Set<HotelImage> images;
+
     @Column(nullable = true)
     private String hotline;
 

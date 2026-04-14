@@ -17,7 +17,7 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     SELECT new vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse(
         h.id, h.name, h.thumbnail, h.address.street, h.address.ward, h.address.province, 
         h.address.latitude, h.address.longitude, h.description, h.viewCount,
-        COALESCE(avg(c.rating), 0.0), COALESCE(size(h.comments), 0), 
+        round(COALESCE(avg(c.rating), 0.0), 2), COALESCE(size(h.comments), 0), 
         COALESCE(min(r.price), 0.0), COALESCE(max(r.price), 0.0))
     FROM Hotel h
     LEFT JOIN h.comments c

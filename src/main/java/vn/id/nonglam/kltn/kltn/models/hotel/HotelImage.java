@@ -5,29 +5,29 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Table(name = "hotel_utilities")
+@Table(name = "hotel_images")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HotelUtility {
+public class HotelImage {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column
-    private String name;
-
-    @Column(name = "icon_code")
-    private String iconCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Hotel hotel;
 
     @Column
-    private boolean isActive;
+    private String path;
 
     @Column
     private LocalDateTime createdAt;

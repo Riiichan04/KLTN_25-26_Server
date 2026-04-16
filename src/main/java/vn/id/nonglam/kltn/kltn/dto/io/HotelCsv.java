@@ -4,6 +4,8 @@ package vn.id.nonglam.kltn.kltn.dto.io;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvDate;
 
+import java.time.LocalDateTime;
+
 public record HotelCsv(
 //  Map into Hotel
         @CsvBindByName(column = "name") String name,
@@ -20,10 +22,10 @@ public record HotelCsv(
 
         @CsvBindByName(column = "createdAt")
         @CsvDate("yyyy-MM-dd HH:mm:ss")
-                String createdAt,
+        LocalDateTime createdAt,
 
         @CsvBindByName(column = "updatedAt")
         @CsvDate("yyyy-MM-dd HH:mm:ss")
-        String updatedAt
+        LocalDateTime updatedAt
 ) {
 }

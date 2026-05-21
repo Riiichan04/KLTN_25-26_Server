@@ -10,6 +10,7 @@ import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -58,5 +59,14 @@ public class Order {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+    }
+
+    public BigDecimal calculateTotalAmount() {
+        if (this.orderDetails == null || this.orderDetails.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return this.orderDetails.stream()
+                .map(OrderDetail::getActualPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

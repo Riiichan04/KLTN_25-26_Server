@@ -9,6 +9,7 @@ import vn.id.nonglam.kltn.kltn.common.enums.Gender;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Table(name = "users")
@@ -57,6 +58,10 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "payment_detail")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserPaymentDetail> paymentDetails;
 
     @PrePersist
     protected void onCreate() {

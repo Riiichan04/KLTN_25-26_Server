@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +34,7 @@ public class RoomType {
     private int capacity;
 
     @Column
-    private double price;
+    private BigDecimal price;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

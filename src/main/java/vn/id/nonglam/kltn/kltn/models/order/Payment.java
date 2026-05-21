@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentMethod;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class Payment {
     private Order order;
 
     @Column
-    private double amount;
+    private BigDecimal amount;
 
     @Column
     private PaymentMethod method;

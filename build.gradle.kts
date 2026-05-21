@@ -42,6 +42,8 @@ dependencies {
 	implementation (libs.cloudinary)
 	implementation (libs.cloudinary.http5)
 
+	implementation(libs.opencsv)
+
 	api(libs.spring.boot.starter.mail)
 	implementation(libs.spring.boot.starter.thymeleaf)
 	implementation(libs.springboot.starter)

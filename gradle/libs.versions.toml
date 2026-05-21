@@ -25,6 +25,9 @@ cloudinary = "2.3.2"
 # For jwt
 jjwt = "0.11.5"
 
+# For OpenCSV
+opencsv = "5.9"
+
 # Libraries definition
 [libraries]
 springboot-starter = {module = "org.springframework.boot:spring-boot-starter", version.ref = "springboot-stater" }
@@ -58,3 +61,5 @@ cloudinary-http5 = { module = "com.cloudinary:cloudinary-http5", version.ref = "
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
+opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }

@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import vn.id.nonglam.kltn.kltn.common.enums.HotelStatus;
+import vn.id.nonglam.kltn.kltn.models.user.User;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -29,6 +30,10 @@ public class Hotel {
 
     @Column
     private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     @Column
     private String description;

@@ -14,7 +14,7 @@ import vn.id.nonglam.kltn.kltn.services.admin.AdminUserService;
 @RestController
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
-public class AdminUserManagementController {
+public class UserManagementController {
     private final AdminUserService adminUserService;
 
     @GetMapping("/get-users-list")

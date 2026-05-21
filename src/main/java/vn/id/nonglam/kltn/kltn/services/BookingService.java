@@ -7,7 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
-import vn.id.nonglam.kltn.kltn.dto.OrderDTO;
+import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
+import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomType;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
@@ -29,15 +30,15 @@ public class BookingService {
     private final RoomDetailRepository roomDetailRepository;
     private final UserRepository userRepository;
 
-    public List<OrderDTO.RoomDetailValidResponse> getRoomDetailsValid(UUID hotelId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<OrderResponse.RoomDetailValidResponse> getRoomDetailsValid(UUID hotelId, LocalDateTime startDate, LocalDateTime endDate) {
         List<RoomType> roomTypes = roomTypeRepository.findByHotel_IdAndActiveTrue(hotelId);
-        List<OrderDTO.RoomDetailValidResponse> result = new ArrayList<>();
+        List<OrderResponse.RoomDetailValidResponse> result = new ArrayList<>();
 
         for (RoomType rt : roomTypes) {
-            List<OrderDTO.RoomDetailSnapShotResponse> roomDetailSnapshot = rt.getRoomDetails().stream()
-                    .filter(rd -> rd.isActive()).map(rd -> new OrderDTO.RoomDetailSnapShotResponse(rd.getId(), rd.getRoomCode(),
+            List<OrderResponse.RoomDetailSnapShotResponse> roomDetailSnapshot = rt.getRoomDetails().stream()
+                    .filter(rd -> rd.isActive()).map(rd -> new OrderResponse.RoomDetailSnapShotResponse(rd.getId(), rd.getRoomCode(),
                             orderDetailRepository.checkValidRoomDetail(rd.getId(), startDate, endDate))).toList();
-            OrderDTO.RoomDetailValidResponse roomValid = new OrderDTO.RoomDetailValidResponse(
+            OrderResponse.RoomDetailValidResponse roomValid = new OrderResponse.RoomDetailValidResponse(
                     rt.getId(), rt.getName(), roomDetailSnapshot);
             result.add(roomValid);
         }
@@ -45,7 +46,7 @@ public class BookingService {
     }
 
     @Transactional
-    public OrderDTO.OrderResponse createOrder(OrderDTO.OrderRequest orderRequest) {
+    public OrderResponse createOrder(OrderRequest orderRequest) {
         UUID userId = SecurityUtil.currentUserId().orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
 
@@ -86,7 +87,7 @@ public class BookingService {
             orderDetailRepository.save(orderDetail);
         }
 
-        return new OrderDTO.OrderResponse(true, order.getId(), deposited);
+        return new OrderResponse(true, order.getId(), deposited);
     }
 
 

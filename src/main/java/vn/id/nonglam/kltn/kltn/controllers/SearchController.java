@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
 import vn.id.nonglam.kltn.kltn.services.SearchService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -22,10 +23,9 @@ public class SearchController {
             @RequestParam(required = false) List<Double> extentAddress,
             @RequestParam int type,
             @RequestParam(required = false, defaultValue = "0") Integer minRating,
-            @RequestParam(required = false, defaultValue = "0.0") Double minPrice,
-            @RequestParam(required = false, defaultValue = Double.MAX_VALUE+"") Double maxPrice,
+            @RequestParam(required = false, defaultValue = "0.0") BigDecimal minPrice,
+            @RequestParam(required = false, defaultValue = "999999999999999") BigDecimal maxPrice,
             @RequestParam Pageable pageable
-
             ) {
         return ResponseEntity.ok(searchService.searchHotels(keyWord, extentAddress,
                 type, minRating, minPrice, maxPrice, pageable));

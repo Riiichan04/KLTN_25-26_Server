@@ -16,6 +16,7 @@ import vn.id.nonglam.kltn.kltn.models.order.OrderDetail;
 import vn.id.nonglam.kltn.kltn.repositories.*;
 import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,7 @@ public class BookingService {
         order.setCheckOutDate(orderRequest.checkout());
         order = orderRepository.save(order);
 
-        double deposited = 0;
+        BigDecimal deposited = BigDecimal.valueOf(0);
         for(UUID id: orderRequest.roomDetailsId()) {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
@@ -81,8 +82,8 @@ public class BookingService {
             if(roomDetail == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your chosen room is not valid!");
 
             orderDetail.setRoomDetail(roomDetail);
-            double actualPrice = roomDetail.getRoomType().getPrice();
-            deposited += actualPrice*roomDetail.getRoomType().getDepositedPercent();
+            BigDecimal actualPrice = roomDetail.getRoomType().getPrice();
+            deposited = deposited.add(actualPrice.multiply(BigDecimal.valueOf(roomDetail.getRoomType().getDepositedPercent())));
             orderDetail.setActualPrice(actualPrice);
             orderDetailRepository.save(orderDetail);
         }

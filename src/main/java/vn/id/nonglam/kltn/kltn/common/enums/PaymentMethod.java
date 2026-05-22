@@ -1,5 +1,8 @@
 package vn.id.nonglam.kltn.kltn.common.enums;
 
 public enum PaymentMethod {
-    MOMO, CASH
+    SEPAY_BANK_TRANSFER,
+    VNPAY,
+    MOMO,
+    CASH
 }

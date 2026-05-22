@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Table(name = "order_details")
@@ -29,5 +30,5 @@ public class OrderDetail {
     private RoomDetail roomDetail;
 
     @Column
-    private double actualPrice;
+    private BigDecimal actualPrice;
 }

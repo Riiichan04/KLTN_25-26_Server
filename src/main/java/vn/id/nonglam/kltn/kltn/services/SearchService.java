@@ -9,6 +9,7 @@ import vn.id.nonglam.kltn.kltn.dto.request.search.ExtentAddressRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
 import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -18,7 +19,7 @@ public class SearchService {
 
     public Page<SearchHotelResponse> searchHotels(String keyWord, List<Double> extentAddressRequest,
                                                   int type, Integer minRating,
-                                                  Double minPrice, Double maxPrice,
+                                                  BigDecimal minPrice, BigDecimal maxPrice,
                                                   Pageable pageable) {
         Page<SearchHotelResponse> hotels = Page.empty();
         /**

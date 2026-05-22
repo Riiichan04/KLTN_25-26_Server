@@ -10,6 +10,7 @@ import vn.id.nonglam.kltn.kltn.dto.response.admin.GetSnapshotHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,7 +21,9 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
         h.id, h.name, h.thumbnail, h.address.street, h.address.ward, h.address.province, 
         h.address.latitude, h.address.longitude, h.description, h.viewCount,
         round(COALESCE(avg(c.rating), 0.0), 2), COALESCE(size(h.comments), 0), 
-        COALESCE(min(r.price), 0.0), COALESCE(max(r.price), 0.0))
+        CAST(COALESCE(min(r.price), 0.0) AS BigDecimal),
+        CAST(COALESCE(max(r.price), 0.0) AS BigDecimal)
+    )
     FROM Hotel h
     LEFT JOIN h.comments c
     LEFT JOIN h.roomTypes r
@@ -36,7 +39,7 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     Page<SearchHotelResponse> findHotels(String keyWord,
                                          Double minLongitude, Double minLatitude,
                                          Double maxLongitude, Double maxLatitude,
-                                         Integer minRating, Double minPrice, Double maxPrice, Pageable pageable
+                                         Integer minRating, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable
     );
 
     @EntityGraph(attributePaths = {"address", "roomTypes", "roomTypes.images", "roomTypes.utilities", "utilities"})

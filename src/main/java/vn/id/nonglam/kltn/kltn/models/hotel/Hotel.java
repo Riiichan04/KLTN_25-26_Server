@@ -35,7 +35,7 @@ public class Hotel {
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @Column
+    @Column(length = 5000)
     private String description;
 
     @Column

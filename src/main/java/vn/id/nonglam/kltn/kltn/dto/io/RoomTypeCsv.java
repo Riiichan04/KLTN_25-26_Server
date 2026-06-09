@@ -1,21 +1,13 @@
 package vn.id.nonglam.kltn.kltn.dto.io;
-
 import com.opencsv.bean.CsvBindByName;
-import com.opencsv.bean.CsvDate;
-
-public record RoomTypeCsv(
-        @CsvBindByName(column = "name") String name,
-        @CsvBindByName(column = "description") String description,
-        @CsvBindByName(column = "capacity") int capacity,
-        @CsvBindByName(column = "price") double price,
-        @CsvBindByName(column = "depositedPercent") double depositedPercent,
-
-        @CsvBindByName(column = "createdAt")
-        @CsvDate("yyyy-MM-dd HH:mm:ss")
-                String createdAt,
-
-        @CsvBindByName(column = "updatedAt")
-        @CsvDate("yyyy-MM-dd HH:mm:ss")
-        String updatedAt
-) {
+import lombok.Data;
+import java.math.BigDecimal;
+@Data
+public class RoomTypeCsv {
+        @CsvBindByName(column = "name") private String name;
+        @CsvBindByName(column = "description") private String description;
+        @CsvBindByName(column = "capacity") private int capacity;
+        @CsvBindByName(column = "price") private BigDecimal price;
+        @CsvBindByName(column = "depositedPercent") private double depositedPercent;
+        @CsvBindByName(column = "images_list") private String imagesList;
 }

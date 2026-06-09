@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import vn.id.nonglam.kltn.kltn.dto.response.hotel.HotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.*;
+import vn.id.nonglam.kltn.kltn.repositories.AddressRepository;
 import vn.id.nonglam.kltn.kltn.repositories.CommentRepository;
 import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
+import vn.id.nonglam.kltn.kltn.dto.response.HomePageStatisticResponse.*;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,11 +19,16 @@ import java.util.stream.Collectors;
 public class HotelService {
     private final HotelRepository hotelRepository;
     private final CommentRepository commentRepository;
+    private final AddressRepository addressRepository;
 
     public HotelResponse getHotelById(UUID id) {
         Hotel hotel = hotelRepository.getHotelById(id);
         if(hotel == null) return null;
         return mapper(hotel);
+    }
+
+    public List<ProvinceStatistic> statisticProvincesByHotel() {
+        return addressRepository.statisticAddress();
     }
 
     private HotelResponse mapper(Hotel h) {

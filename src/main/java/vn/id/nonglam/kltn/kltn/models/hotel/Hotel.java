@@ -35,13 +35,13 @@ public class Hotel {
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @Column(length = 5000)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column
     private String thumbnail;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Address address;
@@ -50,7 +50,7 @@ public class Hotel {
     @JsonIgnoreProperties("hotel")
     private Set<RoomType> roomTypes;
 
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("hotel")
     private Set<HotelImage> images;
 
@@ -69,7 +69,7 @@ public class Hotel {
     @JsonIgnoreProperties("hotel")
     private Set<Comment> comments;
 
-    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("hotel")
     private Set<HotelRegulation> regulations;
 

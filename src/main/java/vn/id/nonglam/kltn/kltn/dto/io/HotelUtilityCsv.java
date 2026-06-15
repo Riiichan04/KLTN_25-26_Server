@@ -15,4 +15,7 @@ public record HotelUtilityCsv(
       @CsvDate("yyyy-MM-dd HH:mm:ss")
       String updatedAt
 ) {
+      public HotelUtilityCsv() {
+            this(null, false, null, null);
+      }
 }

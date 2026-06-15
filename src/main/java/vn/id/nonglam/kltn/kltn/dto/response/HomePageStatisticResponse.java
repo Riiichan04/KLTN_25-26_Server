@@ -5,5 +5,5 @@ import java.util.List;
 public record HomePageStatisticResponse(
         List<ProvinceStatistic> provinceStatistics
 ) {
-    public record ProvinceStatistic(String name, int hotelCount, String postalCode, String thumbnail) {}
+    public record ProvinceStatistic(String name, Long hotelCount, int postalCode, String thumbnail) {}
 }

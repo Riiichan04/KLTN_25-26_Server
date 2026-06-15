@@ -2,6 +2,7 @@ package vn.id.nonglam.kltn.kltn.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.id.nonglam.kltn.kltn.dto.response.HomePageStatisticResponse;
@@ -13,6 +14,7 @@ import vn.id.nonglam.kltn.kltn.services.HotelService;
 public class HomePageController {
     private final HotelService hotelService;
 
+    @GetMapping("/data")
     public ResponseEntity<HomePageStatisticResponse> getHomePageData() {
         return ResponseEntity.ok(new HomePageStatisticResponse(hotelService.statisticProvincesByHotel()));
     }

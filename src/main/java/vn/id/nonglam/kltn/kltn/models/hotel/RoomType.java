@@ -27,7 +27,7 @@ public class RoomType {
     @Column
     private String name;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column
@@ -48,11 +48,11 @@ public class RoomType {
     @JoinColumn(name  = "hotel_id")
     private Hotel hotel;
 
-    @OneToMany(mappedBy = "roomType", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("roomType")
     private Set<RoomTypeImage> images;
 
-    @OneToMany(mappedBy = "roomType", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("roomType")
     private List<RoomDetail> roomDetails;
 

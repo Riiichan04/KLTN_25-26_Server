@@ -11,6 +11,7 @@ import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,4 +70,6 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
 
     @EntityGraph(attributePaths = {"address", "roomTypes", "images", "utilities", "regulations"})
     Optional<Hotel> findById(UUID id);
+
+    List<Hotel> findTop5ByIsActiveTrueOrderByViewCountDesc();
 }

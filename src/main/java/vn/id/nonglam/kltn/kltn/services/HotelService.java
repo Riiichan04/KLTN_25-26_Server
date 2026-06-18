@@ -2,6 +2,7 @@ package vn.id.nonglam.kltn.kltn.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import vn.id.nonglam.kltn.kltn.dto.response.HomePageStatisticResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.hotel.HotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.*;
 import vn.id.nonglam.kltn.kltn.repositories.AddressRepository;
@@ -9,6 +10,7 @@ import vn.id.nonglam.kltn.kltn.repositories.CommentRepository;
 import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
 import vn.id.nonglam.kltn.kltn.dto.response.HomePageStatisticResponse.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,8 +29,31 @@ public class HotelService {
         return mapper(hotel);
     }
 
-    public List<ProvinceStatistic> statisticProvincesByHotel() {
-        return addressRepository.statisticAddress();
+    public HomePageStatisticResponse getHomePageData() {
+        List<ProvinceStatistic> provinces = addressRepository.statisticAddress();
+        List<Hotel> topHotels = hotelRepository.findTop5ByIsActiveTrueOrderByViewCountDesc();
+
+        List<HomePageStatisticResponse.PromotionalHotelResponse> promotions = topHotels.stream().map(h -> {
+            Double rating = commentRepository.avgRatingByHotelId(h.getId());
+
+            BigDecimal minPrice = h.getRoomTypes().stream()
+                    .map(RoomType::getPrice)
+                    .filter(price -> price != null && price.compareTo(BigDecimal.ZERO) > 0)
+                    .min(BigDecimal::compareTo)
+                    .orElse(BigDecimal.valueOf(0));
+
+            return new HomePageStatisticResponse.PromotionalHotelResponse(
+                    h.getId(),
+                    h.getName(),
+                    h.getThumbnail(),
+                    h.getAddress() != null ? h.getAddress().getProvince() : "",
+                    rating,
+                    minPrice,
+                    minPrice    //FIXME: Add Promotion Here
+            );
+        }).toList();
+
+        return new HomePageStatisticResponse(provinces, promotions);
     }
 
     private HotelResponse mapper(Hotel h) {

@@ -16,6 +16,6 @@ public class HomePageController {
 
     @GetMapping("/data")
     public ResponseEntity<HomePageStatisticResponse> getHomePageData() {
-        return ResponseEntity.ok(new HomePageStatisticResponse(hotelService.statisticProvincesByHotel()));
+        return ResponseEntity.ok(hotelService.getHomePageData());
     }
 }

@@ -31,6 +31,17 @@ public class HotelService {
 
     public HomePageStatisticResponse getHomePageData() {
         List<ProvinceStatistic> provinces = addressRepository.statisticAddress();
+
+        List<Hotel> rawExploreHotels = hotelRepository.findTop5ByIsActiveTrueOrderByCreatedAtDesc();
+        List<HomePageStatisticResponse.ExploreHotelResponse> exploreHotels = rawExploreHotels.stream().map(h ->
+                new HomePageStatisticResponse.ExploreHotelResponse(
+                        h.getId(),
+                        h.getName(),
+                        h.getThumbnail(),
+                        h.getAddress() != null ? h.getAddress().getProvince() : ""
+                )
+        ).toList();
+
         List<Hotel> topHotels = hotelRepository.findTop5ByIsActiveTrueOrderByViewCountDesc();
 
         List<HomePageStatisticResponse.PromotionalHotelResponse> promotions = topHotels.stream().map(h -> {
@@ -53,7 +64,7 @@ public class HotelService {
             );
         }).toList();
 
-        return new HomePageStatisticResponse(provinces, promotions);
+        return new HomePageStatisticResponse(provinces, promotions, exploreHotels);
     }
 
     private HotelResponse mapper(Hotel h) {

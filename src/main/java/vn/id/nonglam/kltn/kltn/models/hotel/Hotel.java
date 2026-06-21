@@ -80,6 +80,7 @@ public class Hotel {
     private boolean isActive;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private HotelStatus status;
 
     @Column
@@ -91,6 +92,11 @@ public class Hotel {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 }

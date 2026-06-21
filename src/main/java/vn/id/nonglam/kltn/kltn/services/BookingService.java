@@ -32,7 +32,7 @@ public class BookingService {
     private final UserRepository userRepository;
 
     public List<OrderResponse.RoomDetailValidResponse> getRoomDetailsValid(UUID hotelId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<RoomType> roomTypes = roomTypeRepository.findByHotel_IdAndActiveTrue(hotelId);
+        List<RoomType> roomTypes = roomTypeRepository.findByHotel_IdAndIsActiveTrue(hotelId);
         List<OrderResponse.RoomDetailValidResponse> result = new ArrayList<>();
 
         for (RoomType rt : roomTypes) {

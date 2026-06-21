@@ -20,5 +20,5 @@ public record HotelResponse(UUID id, String name, int countComments, double avgR
 
     public record AddressResponse(UUID id, String street, String ward, String province, int postalCode, double latitude, double longitude) {}
 
-    public record HotelUtilityResponse(UUID id, String name) {}
+    public record HotelUtilityResponse(String name, String iconCode) {}
 }

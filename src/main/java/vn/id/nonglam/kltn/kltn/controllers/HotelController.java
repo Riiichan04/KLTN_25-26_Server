@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.id.nonglam.kltn.kltn.dto.response.hotel.HotelResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.search.CardHotelResponse;
 import vn.id.nonglam.kltn.kltn.services.HotelService;
 
 import java.util.UUID;
@@ -20,5 +21,10 @@ public class HotelController {
     @GetMapping("/get-hotel-detail")
     public ResponseEntity<HotelResponse> getHotelDetail(@RequestParam UUID id) {
         return ResponseEntity.ok(hotelService.getHotelById(id));
+    }
+
+    @GetMapping("/get-snapshot")
+    public ResponseEntity<CardHotelResponse> getHotelSnapshot(@RequestParam UUID id) {
+        return ResponseEntity.ok(hotelService.getSnapshotHotel(id));
     }
 }

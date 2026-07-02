@@ -7,6 +7,6 @@ import java.util.UUID;
 public record OrderResponse(boolean status, UUID orderId, BigDecimal deposit) {
     public record RoomDetailSnapShotResponse(UUID id, String code, boolean valid) {}
 
-    public record RoomDetailValidResponse(UUID roomTypeId, String name,
+    public record RoomDetailValidResponse(UUID roomTypeId, String name, double depositedPercent, BigDecimal price,
                                           List<RoomDetailSnapShotResponse> data) {}
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import vn.id.nonglam.kltn.kltn.dto.response.HomePageStatisticResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.hotel.HotelResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.search.CardHotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.*;
 import vn.id.nonglam.kltn.kltn.repositories.AddressRepository;
 import vn.id.nonglam.kltn.kltn.repositories.CommentRepository;
@@ -68,7 +69,7 @@ public class HotelService {
     }
 
     private HotelResponse mapper(Hotel h) {
-        return new HotelResponse(h.getId(), h.getName(), commentRepository.countByHotelIdAndActiveTrue(h.getId()),
+        return new HotelResponse(h.getId(), h.getName(), commentRepository.countByHotelIdAndIsActiveTrue(h.getId()),
                 commentRepository.avgRatingByHotelId(h.getId()), mapperHotelImages(h.getImages()), h.getDescription(),
                 h.getThumbnail(), mapperAddress(h.getAddress()), mapperRoomType(h.getRoomTypes()),
                 h.getHotline(), mapperHotelUtility(h.getUtilities()),
@@ -101,11 +102,14 @@ public class HotelService {
     }
 
     private Set<HotelResponse.HotelUtilityResponse> mapperHotelUtility(Set<HotelUtility> hotelUtilities) {
-        return hotelUtilities.stream().map(u -> new HotelResponse.HotelUtilityResponse(u.getId(), u.getName())).collect(Collectors.toSet());
+        return hotelUtilities.stream().map(u -> new HotelResponse.HotelUtilityResponse(u.getName(), u.getIconCode())).collect(Collectors.toSet());
     }
 
     private Set<HotelResponse.HotelRegulationResponse> mapperHotelRegulation(Set<HotelRegulation> hotelRegulations) {
         return hotelRegulations.stream().map(r -> new HotelResponse.HotelRegulationResponse(r.getId(), r.getName(), r.getDescription())).collect(Collectors.toSet());
     }
 
+    public CardHotelResponse getSnapshotHotel(UUID id) {
+        return hotelRepository.findHotelSnapshotById(id).orElse(null);
+    }
 }

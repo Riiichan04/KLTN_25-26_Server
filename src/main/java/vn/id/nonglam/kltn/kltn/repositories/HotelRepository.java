@@ -5,9 +5,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.GetSnapshotHotelResponse;
-import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.search.CardHotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 
 import java.math.BigDecimal;
@@ -17,42 +18,98 @@ import java.util.UUID;
 
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, UUID> {
-    @Query("""
-    SELECT new vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse(
-        h.id, h.name, h.thumbnail, h.address.street, h.address.ward, h.address.province, 
-        h.address.latitude, h.address.longitude, h.description, h.viewCount,
-        round(COALESCE(avg(c.rating), 0.0), 2), COALESCE(size(h.comments), 0), 
-        CAST(COALESCE(min(r.price), 0.0) AS BigDecimal),
-        CAST(COALESCE(max(r.price), 0.0) AS BigDecimal)
-    )
+    @Query(value = """
+        SELECT
+            h.id AS id,
+            h.name AS name,
+            h.thumbnail AS thumbnail,
+            h.address.street AS street,
+            h.address.ward AS ward,
+            h.address.province AS province,
+            h.address.latitude AS latitude,
+            h.address.longitude AS longitude,
+            h.description AS description,
+            h.viewCount AS viewCount,
+            ROUND(COALESCE(AVG(c.rating), 0.0), 2) AS avgRating,
+            SIZE(h.comments) AS totalComment,
+            COALESCE(MIN(r.price), 0.0) AS minPrice,
+            COALESCE(MAX(r.price), 0.0) AS maxPrice
+        FROM Hotel h
+        LEFT JOIN h.comments c
+        LEFT JOIN h.roomTypes r
+        WHERE h.isActive = true AND h.address.isActive = true 
+        AND (:keyWord IS NULL OR h.name LIKE %:keyWord%)
+        AND (:minLatitude IS NULL OR h.address.latitude BETWEEN :minLatitude AND :maxLatitude)
+        AND (:minLongitude IS NULL OR h.address.longitude BETWEEN :minLongitude AND :maxLongitude)
+        GROUP BY h.id, h.name, h.thumbnail, h.address.id, h.address.street, h.address.ward, h.address.province, h.address.latitude, h.address.longitude, h.description, h.viewCount
+        HAVING (COALESCE(avg(c.rating), 0) >= :minRating OR COALESCE(avg(c.rating), 0) = 0) 
+        AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
+        ORDER BY COALESCE(avg(c.rating), 0.0) DESC
+    """,
+            countQuery = """
+        SELECT COUNT(DISTINCT h.id)
+        FROM Hotel h
+        LEFT JOIN h.comments c
+        LEFT JOIN h.roomTypes r
+        WHERE h.isActive = true AND h.address.isActive = true 
+        AND (:keyWord IS NULL OR h.name LIKE %:keyWord%)
+        AND (:minLatitude IS NULL OR h.address.latitude BETWEEN :minLatitude AND :maxLatitude)
+        AND (:minLongitude IS NULL OR h.address.longitude BETWEEN :minLongitude AND :maxLongitude)
+        GROUP BY h.id
+        HAVING (COALESCE(avg(c.rating), 0) >= :minRating OR COALESCE(avg(c.rating), 0) = 0) 
+        AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
+    """)
+    Page<CardHotelResponse> findHotels(
+            @Param("keyWord") String keyWord,
+            @Param("minLongitude") Double minLongitude,
+            @Param("minLatitude") Double minLatitude,
+            @Param("maxLongitude") Double maxLongitude,
+            @Param("maxLatitude") Double maxLatitude,
+            @Param("minRating") Integer minRating,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            Pageable pageable
+    );
+
+    @Query(value = """
+    SELECT
+        h.id AS id,
+        h.name AS name,
+        h.thumbnail AS thumbnail,
+        h.address.street AS street,
+        h.address.ward AS ward,
+        h.address.province AS province,
+        h.address.latitude AS latitude,
+        h.address.longitude AS longitude,
+        h.description AS description,
+        h.viewCount AS viewCount,
+        ROUND(COALESCE(AVG(c.rating), 0.0), 2) AS avgRating,
+        SIZE(h.comments) AS totalComment,
+        COALESCE(MIN(r.price), 0.0) AS minPrice,
+        COALESCE(MAX(r.price), 0.0) AS maxPrice
     FROM Hotel h
     LEFT JOIN h.comments c
     LEFT JOIN h.roomTypes r
-    WHERE h.isActive = true AND h.address.isActive = true 
-    AND (:keyWord  = null or h.name like %:keyWord%)
-    AND (:minLatitude is null or h.address.latitude BETWEEN :minLatitude AND :maxLatitude)
-    AND (:minLongitude is null or h.address.longitude BETWEEN :minLongitude AND :maxLongitude)
-    GROUP BY h.id, h.name, h.thumbnail, h.address, h.description, h.viewCount
-    HAVING (COALESCE(avg(c.rating), 0) >= :minRating or COALESCE(avg(c.rating), 0) = 0) 
-    AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
-    ORDER BY COALESCE(avg(c.rating), 0.0) desc 
+    WHERE h.id = :hotelId 
+      AND h.isActive = true 
+      AND h.address.isActive = true 
+    GROUP BY h.id, h.name, h.thumbnail, h.address.id, h.address.street, 
+             h.address.ward, h.address.province, h.address.latitude, 
+             h.address.longitude, h.description, h.viewCount
 """)
-    Page<SearchHotelResponse> findHotels(String keyWord,
-                                         Double minLongitude, Double minLatitude,
-                                         Double maxLongitude, Double maxLatitude,
-                                         Integer minRating, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable
-    );
+    Optional<CardHotelResponse> findHotelSnapshotById(@Param("hotelId") UUID hotelId);
 
     @EntityGraph(attributePaths = {"address", "roomTypes", "roomTypes.images", "roomTypes.utilities", "utilities"})
     @Query("""
-    SELECT h FROM Hotel h 
-    LEFT JOIN h.roomTypes r LEFT JOIN r.utilities ru
-    LEFT JOIN h.utilities u
-    WHERE h.isActive = true   
-    AND h.address.isActive = true AND r.isActive = true 
-    AND ru.isActive = true AND u.isActive = true 
-    """)
-    Hotel getHotelById(UUID id);
+        SELECT h FROM Hotel h 
+        LEFT JOIN h.address a WITH a.isActive = true
+        LEFT JOIN h.roomTypes r WITH r.isActive = true 
+        LEFT JOIN r.utilities ru WITH ru.isActive = true
+        LEFT JOIN h.utilities u WITH u.isActive = true
+        WHERE h.id = :id 
+        AND h.isActive = true
+""")
+    Hotel getHotelById(@Param("id") UUID id);
 
     @Query("""
     SELECT 

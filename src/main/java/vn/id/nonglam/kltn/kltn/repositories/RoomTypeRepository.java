@@ -11,5 +11,5 @@ import java.util.UUID;
 @Repository
 public interface RoomTypeRepository extends JpaRepository<RoomType, UUID> {
     @EntityGraph(attributePaths = {"roomDetails"})
-    List<RoomType> findByHotel_IdAndActiveTrue(UUID hotelId);
+    List<RoomType> findByHotel_IdAndIsActiveTrue(UUID hotelId);
 }

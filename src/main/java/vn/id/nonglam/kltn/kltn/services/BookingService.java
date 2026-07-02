@@ -32,7 +32,7 @@ public class BookingService {
     private final UserRepository userRepository;
 
     public List<OrderResponse.RoomDetailValidResponse> getRoomDetailsValid(UUID hotelId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<RoomType> roomTypes = roomTypeRepository.findByHotel_IdAndActiveTrue(hotelId);
+        List<RoomType> roomTypes = roomTypeRepository.findByHotel_IdAndIsActiveTrue(hotelId);
         List<OrderResponse.RoomDetailValidResponse> result = new ArrayList<>();
 
         for (RoomType rt : roomTypes) {
@@ -40,7 +40,7 @@ public class BookingService {
                     .filter(rd -> rd.isActive()).map(rd -> new OrderResponse.RoomDetailSnapShotResponse(rd.getId(), rd.getRoomCode(),
                             orderDetailRepository.checkValidRoomDetail(rd.getId(), startDate, endDate))).toList();
             OrderResponse.RoomDetailValidResponse roomValid = new OrderResponse.RoomDetailValidResponse(
-                    rt.getId(), rt.getName(), roomDetailSnapshot);
+                    rt.getId(), rt.getName(), rt.getDepositedPercent(), rt.getPrice(), roomDetailSnapshot);
             result.add(roomValid);
         }
         return result;

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.id.nonglam.kltn.kltn.dto.request.search.CoordinatesRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.search.ExtentAddressRequest;
-import vn.id.nonglam.kltn.kltn.dto.response.search.SearchHotelResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.search.CardHotelResponse;
 import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
 
 import java.math.BigDecimal;
@@ -17,11 +17,11 @@ import java.util.List;
 public class SearchService {
     private final HotelRepository hotelRepository;
 
-    public Page<SearchHotelResponse> searchHotels(String keyWord, List<Double> extentAddressRequest,
-                                                  int type, Integer minRating,
-                                                  BigDecimal minPrice, BigDecimal maxPrice,
-                                                  Pageable pageable) {
-        Page<SearchHotelResponse> hotels = Page.empty();
+    public Page<CardHotelResponse> searchHotels(String keyWord, List<Double> extentAddressRequest,
+                                                int type, Integer minRating,
+                                                BigDecimal minPrice, BigDecimal maxPrice,
+                                                Pageable pageable) {
+        Page<CardHotelResponse> hotels = Page.empty();
         /**
          * If type = 0, search by key word
          * If type = 1, search by coordinates

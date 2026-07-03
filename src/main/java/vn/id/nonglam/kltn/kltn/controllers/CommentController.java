@@ -28,13 +28,13 @@ public class CommentController {
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("@securityUtil.isUpdateComment(#id)")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ServiceResponse> updateComment(@PathVariable UUID id, @RequestBody UpdateCommentRequest body) {
         return ResponseEntity.ok(commentService.updateComment(id, body));
     }
 
     @DeleteMapping("/delete")
-    @PreAuthorize("@securityUtil.isDeleteComment(#commentId)")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ServiceResponse> deleteComment(@RequestBody UUID commentId) {
         return ResponseEntity.ok(commentService.deleteComment(commentId));
     }

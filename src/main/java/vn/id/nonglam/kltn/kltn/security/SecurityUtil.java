@@ -23,21 +23,21 @@ public class SecurityUtil {
                 .filter(p -> p instanceof UUID)
                 .map(p -> (UUID) p);
     }
-
-    public boolean isUpdateComment(UUID commentId) {
-        String currentUsername = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-        //Admin can elete
-        return commentRepository.findById(commentId)
-                .map(c -> c.getUser().getUsername().equals(currentUsername))
-                .orElse(false);
-    }
-
-    public boolean isDeleteComment(UUID commentId) {
-        String currentUsername = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
-        //Admin can elete
-        if (userRepository.findByUsername(currentUsername).getRole() == UserRole.ADMIN) return true;
-        return commentRepository.findById(commentId)
-                .map(c -> c.getUser().getUsername().equals(currentUsername))
-                .orElse(false);
-    }
+//
+//    public boolean isUpdateComment(UUID commentId) {
+//        String currentUsername = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+//        //Admin can elete
+//        return commentRepository.findById(commentId)
+//                .map(c -> c.getUser().getUsername().equals(currentUsername))
+//                .orElse(false);
+//    }
+//
+//    public boolean isDeleteComment(UUID commentId) {
+//        String currentUsername = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+//        //Admin can elete
+//        if (userRepository.findByUsername(currentUsername).getRole() == UserRole.ADMIN) return true;
+//        return commentRepository.findById(commentId)
+//                .map(c -> c.getUser().getUsername().equals(currentUsername))
+//                .orElse(false);
+//    }
 }

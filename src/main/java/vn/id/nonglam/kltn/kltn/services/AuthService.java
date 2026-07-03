@@ -13,6 +13,8 @@ import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 import vn.id.nonglam.kltn.kltn.security.JwtTokenProvider;
 import vn.id.nonglam.kltn.kltn.security.PasswordEncryption;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class AuthService {
@@ -58,14 +60,15 @@ public class AuthService {
         dto.setId(targetUser.getId());
         dto.setActive(targetUser.isActive());
         dto.setAvatar(targetUser.getAvatarUrl());
-//        dto.setDescription(targetUser.getDescription());
         dto.setDisplayName(targetUser.getDisplayName());
         dto.setEmail(targetUser.getEmail());
-//        dto.setGender(targetUser.getGender());
+        dto.setActive(targetUser.isActive());
+        dto.setVerified(targetUser.isVerified());
         dto.setRole(targetUser.getRole());
         dto.setUsername(targetUser.getUsername());
         dto.setVerified(targetUser.isVerified());
         dto.setJwtToken(jwtToken);
+        dto.setPermissions(List.of());
         return dto;
     }
 }

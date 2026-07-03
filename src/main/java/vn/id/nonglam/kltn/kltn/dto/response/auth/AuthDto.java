@@ -7,6 +7,7 @@ import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.common.enums.Gender;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -22,8 +23,10 @@ public class AuthDto {
     private String avatar;
     private String phone;
     private String description;
-    private boolean isActive;
-    private boolean isVerified;
+    private boolean active;
+    private boolean verified;
     private UserRole role;
     private String jwtToken;
+    private List<String> permissions;
+
 }

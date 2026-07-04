@@ -27,6 +27,4 @@ public class AuthDto {
     private boolean verified;
     private UserRole role;
     private String jwtToken;
-    private List<String> permissions;
-
 }

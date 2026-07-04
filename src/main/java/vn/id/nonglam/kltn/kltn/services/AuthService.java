@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.LoginRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.RegisterRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.auth.AuthDto;
@@ -12,8 +13,6 @@ import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 import vn.id.nonglam.kltn.kltn.security.JwtTokenProvider;
 import vn.id.nonglam.kltn.kltn.security.PasswordEncryption;
-
-import java.util.List;
 
 @Service
 @Slf4j
@@ -51,6 +50,7 @@ public class AuthService {
         newUser.setEmail(input.email());
         newUser.setUsername(input.username());
         newUser.setPassword(PasswordEncryption.hashPassword(input.password()));
+        newUser.setRole(UserRole.USER);
         this.userRepository.save(newUser);
         return new AuthResponse(true, "Register success!", null);
     }
@@ -68,7 +68,6 @@ public class AuthService {
         dto.setUsername(targetUser.getUsername());
         dto.setVerified(targetUser.isVerified());
         dto.setJwtToken(jwtToken);
-        dto.setPermissions(List.of());
         return dto;
     }
 }

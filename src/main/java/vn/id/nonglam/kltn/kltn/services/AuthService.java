@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.LoginRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.RegisterRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.auth.AuthDto;
@@ -49,6 +50,7 @@ public class AuthService {
         newUser.setEmail(input.email());
         newUser.setUsername(input.username());
         newUser.setPassword(PasswordEncryption.hashPassword(input.password()));
+        newUser.setRole(UserRole.USER);
         this.userRepository.save(newUser);
         return new AuthResponse(true, "Register success!", null);
     }
@@ -58,10 +60,10 @@ public class AuthService {
         dto.setId(targetUser.getId());
         dto.setActive(targetUser.isActive());
         dto.setAvatar(targetUser.getAvatarUrl());
-//        dto.setDescription(targetUser.getDescription());
         dto.setDisplayName(targetUser.getDisplayName());
         dto.setEmail(targetUser.getEmail());
-//        dto.setGender(targetUser.getGender());
+        dto.setActive(targetUser.isActive());
+        dto.setVerified(targetUser.isVerified());
         dto.setRole(targetUser.getRole());
         dto.setUsername(targetUser.getUsername());
         dto.setVerified(targetUser.isVerified());

@@ -2,7 +2,10 @@ package vn.id.nonglam.kltn.kltn.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import vn.id.nonglam.kltn.kltn.dto.request.search.CoordinatesRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.search.ExtentAddressRequest;
@@ -19,33 +22,71 @@ public class SearchService {
 
     public Page<CardHotelResponse> searchHotels(String keyWord, List<Double> extentAddressRequest,
                                                 int type, Integer minRating,
-                                                BigDecimal minPrice, BigDecimal maxPrice,
+                                                BigDecimal minPrice, BigDecimal maxPrice, String sortType,
                                                 Pageable pageable) {
+
+        Sort customSort;
+        String sortCondition = (sortType != null) ? sortType.toUpperCase() : "";
+
+        switch (sortCondition) {
+            case "PRICE_ASC":
+                customSort = JpaSort.unsafe(Sort.Direction.ASC, "minPrice");
+                break;
+            case "PRICE_DESC":
+                customSort = JpaSort.unsafe(Sort.Direction.DESC, "minPrice");
+                break;
+            case "RATING_ASC":
+                customSort = JpaSort.unsafe(Sort.Direction.ASC, "avgRating");
+                break;
+            case "RATING_DESC":
+                customSort = JpaSort.unsafe(Sort.Direction.DESC, "avgRating");
+                break;
+            default:
+                // If sortType = "" || sortType = null
+                customSort = JpaSort.unsafe(Sort.Direction.DESC, "avgRating");
+                break;
+        }
+
+        Pageable customPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), customSort);
+
         Page<CardHotelResponse> hotels = Page.empty();
+
         /**
          * If type = 0, search by key word
          * If type = 1, search by coordinates
-         * */
-        if(type == 0 && keyWord != null && !keyWord.isEmpty()) {
-            hotels = hotelRepository.findHotels(keyWord, null,
-                    null, null, null, minRating, minPrice, maxPrice, pageable);
+         */
+        if (type == 0 && keyWord != null && !keyWord.isEmpty()) {
+            hotels = hotelRepository.findHotels(
+                    keyWord, null, null, null, null,
+                    minRating, minPrice, maxPrice, customPageable
+            );
         }
-        else if(type == 1 && extentAddressRequest != null && !extentAddressRequest.isEmpty()) {
-            if(extentAddressRequest.size() == 4) {
+        else if (type == 1 && extentAddressRequest != null && !extentAddressRequest.isEmpty()) {
+            if (extentAddressRequest.size() == 4) {
                 ExtentAddressRequest addressRequest = new ExtentAddressRequest(extentAddressRequest);
-                hotels = hotelRepository.findHotels(null, addressRequest.getMinLongitudeExtent(),
+                hotels = hotelRepository.findHotels(
+                        null,
+                        addressRequest.getMinLongitudeExtent(),
                         addressRequest.getMinLatitudeExtent(),
                         addressRequest.getMaxLongitudeExtent(),
-                        addressRequest.getMaxLatitudeExtent(), minRating, minPrice, maxPrice,pageable);
+                        addressRequest.getMaxLatitudeExtent(),
+                        minRating, minPrice, maxPrice, customPageable
+                );
             }
-            else if(extentAddressRequest.size() == 2) {
+            else if (extentAddressRequest.size() == 2) {
                 CoordinatesRequest addressRequest = new CoordinatesRequest(extentAddressRequest);
-                double[] minAndMaxCoordinates = calMinMaxLatitudeAndLongitude(addressRequest.getLatitude(),
-                        addressRequest.getLongitude(), 5);
-                hotels = hotelRepository.findHotels(null, minAndMaxCoordinates[0],
-                        minAndMaxCoordinates[1], minAndMaxCoordinates[2],
-                        minAndMaxCoordinates[3], minRating, minPrice, maxPrice, pageable);
-
+                double[] minAndMaxCoordinates = calMinMaxLatitudeAndLongitude(
+                        addressRequest.getLatitude(),
+                        addressRequest.getLongitude(), 5
+                );
+                hotels = hotelRepository.findHotels(
+                        null,
+                        minAndMaxCoordinates[0],
+                        minAndMaxCoordinates[1],
+                        minAndMaxCoordinates[2],
+                        minAndMaxCoordinates[3],
+                        minRating, minPrice, maxPrice, customPageable
+                );
             }
         }
         return hotels;

@@ -25,9 +25,10 @@ public class SearchController {
             @RequestParam(required = false, defaultValue = "0") Integer minRating,
             @RequestParam(required = false, defaultValue = "0.0") BigDecimal minPrice,
             @RequestParam(required = false, defaultValue = "999999999999999") BigDecimal maxPrice,
+            @RequestParam(required = false) String sortType,
             Pageable pageable
             ) {
         return ResponseEntity.ok(searchService.searchHotels(keyWord, extentAddress,
-                type, minRating, minPrice, maxPrice, pageable));
+                type, minRating, minPrice, maxPrice, sortType, pageable));
     }
 }

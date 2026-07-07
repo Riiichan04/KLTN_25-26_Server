@@ -19,46 +19,45 @@ import java.util.UUID;
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     @Query(value = """
-        SELECT
-            h.id AS id,
-            h.name AS name,
-            h.thumbnail AS thumbnail,
-            h.address.street AS street,
-            h.address.ward AS ward,
-            h.address.province AS province,
-            h.address.latitude AS latitude,
-            h.address.longitude AS longitude,
-            h.description AS description,
-            h.viewCount AS viewCount,
-            ROUND(COALESCE(AVG(c.rating), 0.0), 2) AS avgRating,
-            SIZE(h.comments) AS totalComment,
-            COALESCE(MIN(r.price), 0.0) AS minPrice,
-            COALESCE(MAX(r.price), 0.0) AS maxPrice
-        FROM Hotel h
-        LEFT JOIN h.comments c
-        LEFT JOIN h.roomTypes r
-        WHERE h.isActive = true AND h.address.isActive = true 
-        AND (:keyWord IS NULL OR h.name LIKE %:keyWord%)
-        AND (:minLatitude IS NULL OR h.address.latitude BETWEEN :minLatitude AND :maxLatitude)
-        AND (:minLongitude IS NULL OR h.address.longitude BETWEEN :minLongitude AND :maxLongitude)
-        GROUP BY h.id, h.name, h.thumbnail, h.address.id, h.address.street, h.address.ward, h.address.province, h.address.latitude, h.address.longitude, h.description, h.viewCount
-        HAVING (COALESCE(avg(c.rating), 0) >= :minRating OR COALESCE(avg(c.rating), 0) = 0) 
-        AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
-        ORDER BY COALESCE(avg(c.rating), 0.0) DESC
-    """,
+    SELECT
+        h.id AS id,
+        h.name AS name,
+        h.thumbnail AS thumbnail,
+        h.address.street AS street,
+        h.address.ward AS ward,
+        h.address.province AS province,
+        h.address.latitude AS latitude,
+        h.address.longitude AS longitude,
+        h.description AS description,
+        h.viewCount AS viewCount,
+        ROUND(COALESCE(AVG(c.rating), 0.0), 2) AS avgRating,
+        SIZE(h.comments) AS totalComment,
+        COALESCE(MIN(r.price), 0.0) AS minPrice,
+        COALESCE(MAX(r.price), 0.0) AS maxPrice
+    FROM Hotel h
+    LEFT JOIN h.comments c
+    LEFT JOIN h.roomTypes r
+    WHERE h.isActive = true AND h.address.isActive = true 
+    AND (:keyWord IS NULL OR h.name LIKE %:keyWord%)
+    AND (:minLatitude IS NULL OR h.address.latitude BETWEEN :minLatitude AND :maxLatitude)
+    AND (:minLongitude IS NULL OR h.address.longitude BETWEEN :minLongitude AND :maxLongitude)
+    GROUP BY h.id, h.name, h.thumbnail, h.address.id, h.address.street, h.address.ward, h.address.province, h.address.latitude, h.address.longitude, h.description, h.viewCount
+    HAVING (COALESCE(avg(c.rating), 0) >= :minRating OR COALESCE(avg(c.rating), 0) = 0) 
+    AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
+""",
             countQuery = """
-        SELECT COUNT(DISTINCT h.id)
-        FROM Hotel h
-        LEFT JOIN h.comments c
-        LEFT JOIN h.roomTypes r
-        WHERE h.isActive = true AND h.address.isActive = true 
-        AND (:keyWord IS NULL OR h.name LIKE %:keyWord%)
-        AND (:minLatitude IS NULL OR h.address.latitude BETWEEN :minLatitude AND :maxLatitude)
-        AND (:minLongitude IS NULL OR h.address.longitude BETWEEN :minLongitude AND :maxLongitude)
-        GROUP BY h.id
-        HAVING (COALESCE(avg(c.rating), 0) >= :minRating OR COALESCE(avg(c.rating), 0) = 0) 
-        AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
-    """)
+    SELECT COUNT(DISTINCT h.id)
+    FROM Hotel h
+    LEFT JOIN h.comments c
+    LEFT JOIN h.roomTypes r
+    WHERE h.isActive = true AND h.address.isActive = true 
+    AND (:keyWord IS NULL OR h.name LIKE %:keyWord%)
+    AND (:minLatitude IS NULL OR h.address.latitude BETWEEN :minLatitude AND :maxLatitude)
+    AND (:minLongitude IS NULL OR h.address.longitude BETWEEN :minLongitude AND :maxLongitude)
+    GROUP BY h.id
+    HAVING (COALESCE(avg(c.rating), 0) >= :minRating OR COALESCE(avg(c.rating), 0) = 0) 
+    AND COALESCE(min(r.price), 0.0) BETWEEN :minPrice AND :maxPrice
+""")
     Page<CardHotelResponse> findHotels(
             @Param("keyWord") String keyWord,
             @Param("minLongitude") Double minLongitude,

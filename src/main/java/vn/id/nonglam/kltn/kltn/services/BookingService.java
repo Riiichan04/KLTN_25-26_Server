@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import vn.id.nonglam.kltn.kltn.common.constants.PlatformFee;
 import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
@@ -13,6 +14,7 @@ import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomType;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
 import vn.id.nonglam.kltn.kltn.models.order.OrderDetail;
+import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.*;
 import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
 
@@ -37,10 +39,19 @@ public class BookingService {
 
         for (RoomType rt : roomTypes) {
             List<OrderResponse.RoomDetailSnapShotResponse> roomDetailSnapshot = rt.getRoomDetails().stream()
-                    .filter(rd -> rd.isActive()).map(rd -> new OrderResponse.RoomDetailSnapShotResponse(rd.getId(), rd.getRoomCode(),
-                            orderDetailRepository.checkValidRoomDetail(rd.getId(), startDate, endDate))).toList();
+                    .filter(RoomDetail::isActive)
+                    .map(rd ->
+                            new OrderResponse.RoomDetailSnapShotResponse(
+                                    rd.getId(),
+                                    rd.getRoomCode(),
+                                    orderDetailRepository.checkValidRoomDetail(rd.getId(), startDate, endDate))
+                    ).toList();
             OrderResponse.RoomDetailValidResponse roomValid = new OrderResponse.RoomDetailValidResponse(
-                    rt.getId(), rt.getName(), rt.getDepositedPercent(), rt.getPrice(), roomDetailSnapshot);
+                    rt.getId(),
+                    rt.getName(),
+                    rt.getPrice(),
+                    roomDetailSnapshot
+            );
             result.add(roomValid);
         }
         return result;
@@ -51,45 +62,51 @@ public class BookingService {
         UUID userId = SecurityUtil.currentUserId().orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
 
-        if(orderRequest.checkin().isBefore(LocalDateTime.now()))
+        if (orderRequest.checkin().isBefore(LocalDateTime.now()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date");
 
-        if(orderRequest.checkin().isAfter(orderRequest.checkout()))
+        if (orderRequest.checkin().isAfter(orderRequest.checkout()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Checkin date must before checkout date!");
 
-        for(UUID id: orderRequest.roomDetailsId()) {
-            if(orderDetailRepository.checkValidRoomDetail(id, orderRequest.checkin(), orderRequest.checkout())
-            && roomDetailRepository.existsByIdAndActiveTrue(id)) continue;
+        List<RoomDetail> roomDetails = orderRequest.roomDetailsId().stream().map(id -> {
+            boolean isValid = orderDetailRepository.checkValidRoomDetail(id, orderRequest.checkin(), orderRequest.checkout());
+            boolean isExits = roomDetailRepository.existsByIdAndActiveTrue(id);
 
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your chosen room is not valid!");
-        }
+            if (!isValid || !isExits) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your chosen room is not valid!");
+            }
+            return roomDetailRepository.findByIdAndActiveTrue(id);
+        }).toList();
 
+        User user = userRepository.getReferenceById(userId);
         Order order = new Order();
-        order.setUser(userRepository.getReferenceById(userId));
+        order.setUser(user);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNote(orderRequest.note());
-        order.setPaymentStatus(PaymentStatus.UNPAID);
+        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setCheckInDate(orderRequest.checkin());
         order.setCheckOutDate(orderRequest.checkout());
+        order.setTotalCapacity(order.getTotalCapacity());
         order = orderRepository.save(order);
 
-        BigDecimal deposited = BigDecimal.valueOf(0);
-        for(UUID id: orderRequest.roomDetailsId()) {
+        BigDecimal totalPrice = BigDecimal.valueOf(0);
+        for (RoomDetail roomDetail : roomDetails) {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
-
-            RoomDetail roomDetail = roomDetailRepository.findByIdAndActiveTrue(id);
-            if(roomDetail == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your chosen room is not valid!");
-
             orderDetail.setRoomDetail(roomDetail);
+
+            // Actual price
             BigDecimal actualPrice = roomDetail.getRoomType().getPrice();
-            deposited = deposited.add(actualPrice.multiply(BigDecimal.valueOf(roomDetail.getRoomType().getDepositedPercent())));
+            totalPrice = totalPrice.add(actualPrice);
             orderDetail.setActualPrice(actualPrice);
+
+            //Platform price
+            double platformFeePercent = PlatformFee.getPlatformFee(user.getUserType());
+            BigDecimal platformFee = actualPrice.multiply(BigDecimal.valueOf(platformFeePercent));
+            orderDetail.setPlatformFee(platformFee);
+
             orderDetailRepository.save(orderDetail);
         }
-
-        return new OrderResponse(true, order.getId(), deposited);
+        return new OrderResponse(true, order.getId(), totalPrice);
     }
-
-
 }

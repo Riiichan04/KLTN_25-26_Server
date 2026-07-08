@@ -34,11 +34,15 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "TEXT")
     private OrderStatus orderStatus;
 
     @Column
     private String note;
+
+    @Column(nullable = false)
+    private int totalCapacity;
 
     @Column
     private PaymentStatus paymentStatus;

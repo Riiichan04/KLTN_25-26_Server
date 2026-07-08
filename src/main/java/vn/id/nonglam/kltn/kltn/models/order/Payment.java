@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentMethod;
+import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,7 +30,8 @@ public class Payment {
     @Column
     private BigDecimal amount;
 
-    @Column
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "TEXT")
     private PaymentMethod method;
 
     @Column

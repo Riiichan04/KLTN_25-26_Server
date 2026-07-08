@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 import vn.id.nonglam.kltn.kltn.common.constants.PlatformFee;
 import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
+import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
@@ -83,7 +84,7 @@ public class BookingService {
         order.setUser(user);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNote(orderRequest.note());
-        order.setPaymentStatus(PaymentStatus.PENDING);
+//        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setCheckInDate(orderRequest.checkin());
         order.setCheckOutDate(orderRequest.checkout());
         order.setTotalCapacity(order.getTotalCapacity());
@@ -108,5 +109,66 @@ public class BookingService {
             orderDetailRepository.save(orderDetail);
         }
         return new OrderResponse(true, order.getId(), totalPrice);
+    }
+
+    @Transactional
+    public void updateOrderStatus(Order order, OrderStatus newStatus) {
+        User user = findUser();
+        if (user == null) return;
+
+        UserRole role = user.getRole();
+        if (role == null) return;
+
+        if (!verifyOwnership(user, role, order)) return;
+
+        validateOrderStatusUpdate(role, order.getOrderStatus(), newStatus);
+
+        order.setOrderStatus(newStatus);
+        orderRepository.save(order);
+    }
+
+    private boolean verifyOwnership(User user, UserRole role, Order order) {
+        return switch (role) {
+            case ADMIN -> true;
+            case OWNER -> {
+                UUID ownerIdOfThisOrder = order.getHotel().getOwner().getId();
+                yield user.getId().equals(ownerIdOfThisOrder);
+            }
+            case USER -> user.getId().equals(order.getUser().getId());
+        };
+    }
+
+    private void validateOrderStatusUpdate(UserRole role, OrderStatus currentStatus, OrderStatus newStatus) {
+        switch (role) {
+            case ADMIN -> {
+            }
+            case USER -> {
+                if (newStatus != OrderStatus.CANCELLED) {
+                    throw new IllegalArgumentException("Customers can only cancel bookings.");
+                }
+                if (currentStatus == OrderStatus.CHECKED_IN || currentStatus == OrderStatus.COMPLETED) {
+                    throw new IllegalStateException("Can't cancel bookings after checked in or completed");
+                }
+            }
+            case OWNER -> {
+                if (newStatus == OrderStatus.PENDING || newStatus == OrderStatus.PAID) {
+                    throw new IllegalArgumentException("Owner can't update status to PENDING and PAID");
+                }
+                List<OrderStatus> allowedStatus = switch (currentStatus) {
+                    case PENDING -> List.of(OrderStatus.CONFIRMED, OrderStatus.REJECTED);
+                    case PAID -> List.of(OrderStatus.CHECKED_IN, OrderStatus.COMPLETED);
+                    default -> List.of();
+                };
+                if (!allowedStatus.contains(newStatus)) {
+                    throw new IllegalStateException("Status disallowed");
+                }
+            }
+        }
+    }
+
+    private User findUser() {
+        UUID userId = SecurityUtil.currentUserId().orElse(null);
+        if (userId == null) return null;
+        return userRepository.findUserById(userId);
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import vn.id.nonglam.kltn.kltn.dto.response.admin.GetSnapshotHotelResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.admin.GetAdminSnapshotHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.search.CardHotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 
@@ -122,7 +122,7 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     h.isActive AS isActive
     FROM Hotel h
 """)
-    Page<GetSnapshotHotelResponse> getHotels(Pageable pageable);
+    Page<GetAdminSnapshotHotelResponse> getHotels(Pageable pageable);
 
     @EntityGraph(attributePaths = {"address", "roomTypes", "images", "utilities", "regulations"})
     Optional<Hotel> findById(UUID id);

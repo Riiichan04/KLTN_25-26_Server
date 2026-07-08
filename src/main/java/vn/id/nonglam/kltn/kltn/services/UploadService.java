@@ -1,7 +1,7 @@
 package vn.id.nonglam.kltn.kltn.services;
 
 import com.cloudinary.Cloudinary;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import vn.id.nonglam.kltn.kltn.config.CloudinaryConfig.CloudinaryProperties;
 
@@ -9,15 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class UploadService {
     private final Cloudinary cloudinary;
     private final CloudinaryProperties props;
-
-    @Autowired
-    public UploadService(Cloudinary cloudinary, CloudinaryProperties props) {
-        this.cloudinary = cloudinary;
-        this.props = props;
-    }
 
     public Map<String, Object> generateSignature(String folderName, String fileName, String contentType) {
         try {
@@ -43,5 +38,24 @@ public class UploadService {
         catch (Exception e) {
             return null;
         }
+    }
+
+    public Map<String, Object> getSignature(String folderName) {
+        long timestamp = System.currentTimeMillis() / 1000L;
+
+        Map<String, Object> paramsToSign = new HashMap<>();
+        paramsToSign.put("timestamp", timestamp);
+        paramsToSign.put("folder", folderName);
+
+        String signature = cloudinary.apiSignRequest(paramsToSign, props.getSecret(), 2);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("signature", signature);
+        response.put("timestamp", timestamp);
+        response.put("cloud_name", props.getName());
+        response.put("api_key", props.getApiKey());
+        response.put("folder", folderName);
+
+        return response;
     }
 }

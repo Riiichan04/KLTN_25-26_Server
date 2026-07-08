@@ -17,7 +17,7 @@ import vn.id.nonglam.kltn.kltn.services.admin.AdminUserService;
 public class UserManagementController {
     private final AdminUserService adminUserService;
 
-    @GetMapping("/get-users-list")
+    @GetMapping("/get")
     public ResponseEntity<Page<GetUserResponse>> getUsers(Pageable pageable) {
         return ResponseEntity.ok(adminUserService.getUsers(pageable));
     }
@@ -27,12 +27,12 @@ public class UserManagementController {
         return ResponseEntity.ok(adminUserService.addUser(addUserRequest));
     }
 
-    @PostMapping("/change-role")
+    @PostMapping("/role")
     public ResponseEntity<Boolean> changeRole(@RequestBody ChangeUserRoleRequest changeUserRoleRequest) {
         return ResponseEntity.ok(adminUserService.changeRole(changeUserRoleRequest));
     }
 
-    @PostMapping("/change-active")
+    @PostMapping("/active")
     public ResponseEntity<Boolean> changeActive(@RequestBody ChangeUserActiveRequest changeUserActiveRequest) {
         return ResponseEntity.ok(adminUserService.changeActive(changeUserActiveRequest));
     }

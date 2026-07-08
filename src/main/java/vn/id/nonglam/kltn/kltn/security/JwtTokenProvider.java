@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
+import vn.id.nonglam.kltn.kltn.models.auth.UserPrinciple;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -59,6 +60,22 @@ public class JwtTokenProvider {
                 .getBody()
                 .get("userRole", String.class);
         return UserRole.valueOf(rawRole);
+    }
+
+    public UserPrinciple extractUserPrinciple(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String rawRole = claims.get("userRole", String.class);
+        UserRole role = UserRole.valueOf(rawRole);
+
+        String userIdString = claims.get("userId", String.class);
+        UUID id = UUID.fromString(userIdString);
+
+        return new UserPrinciple(id, role);
     }
 
     public Claims extractAllClaims(String token) {

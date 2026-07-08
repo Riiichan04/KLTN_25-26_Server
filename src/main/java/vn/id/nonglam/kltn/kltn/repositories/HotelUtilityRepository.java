@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import vn.id.nonglam.kltn.kltn.models.hotel.HotelUtility;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,6 @@ public interface HotelUtilityRepository extends JpaRepository<HotelUtility, UUID
 
     Optional<HotelUtility> findByName(String name);
     boolean existsByName(String name);
+
+    List<HotelUtility> findAllByIsActive(boolean isActive);
 }

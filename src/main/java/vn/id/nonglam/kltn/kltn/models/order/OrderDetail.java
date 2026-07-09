@@ -31,4 +31,7 @@ public class OrderDetail {
 
     @Column
     private BigDecimal actualPrice;
+
+    @Column
+    private BigDecimal platformFee;
 }

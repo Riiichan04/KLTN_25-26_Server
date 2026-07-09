@@ -2,6 +2,8 @@ package vn.id.nonglam.kltn.kltn.common.utils;
 
 import vn.id.nonglam.kltn.kltn.dto.UserDTO;
 import vn.id.nonglam.kltn.kltn.models.user.User;
+import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
+import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
 
 public interface UserUtil {
     static UserDTO convertUserToUserDTO(User user) {

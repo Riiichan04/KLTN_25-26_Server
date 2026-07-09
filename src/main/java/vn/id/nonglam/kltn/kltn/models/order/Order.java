@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
+import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 
 import java.math.BigDecimal;
@@ -26,6 +27,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @OneToOne
+    private Hotel hotel;
+
     @OneToMany(mappedBy = "order")
     @JsonIgnoreProperties("order")
     private List<OrderDetail> orderDetails;
@@ -34,14 +38,18 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "TEXT")
     private OrderStatus orderStatus;
 
     @Column
     private String note;
 
-    @Column
-    private PaymentStatus paymentStatus;
+    @Column(nullable = false)
+    private int totalCapacity;
+
+//    @Column
+//    private PaymentStatus paymentStatus;
 
     @Column
     private LocalDateTime checkInDate;

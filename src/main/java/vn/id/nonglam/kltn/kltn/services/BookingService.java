@@ -11,6 +11,7 @@ import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomType;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
@@ -112,19 +113,28 @@ public class BookingService {
     }
 
     @Transactional
-    public void updateOrderStatus(Order order, OrderStatus newStatus) {
+    public UpdateOrderResponse updateOrderStatus(UUID orderId, OrderStatus newStatus) {
         User user = findUser();
-        if (user == null) return;
+        if (user == null) return new UpdateOrderResponse(false, "User not found");
 
         UserRole role = user.getRole();
-        if (role == null) return;
+        if (role == null) return new UpdateOrderResponse(false, "User not found");
 
-        if (!verifyOwnership(user, role, order)) return;
+        Order order = orderRepository.findById(orderId).orElse(null);
+        if (order == null) return new UpdateOrderResponse(false, "Order not found");
 
-        validateOrderStatusUpdate(role, order.getOrderStatus(), newStatus);
+        if (!verifyOwnership(user, role, order)) return new UpdateOrderResponse(false, "You are not owner of order");
+
+        try {
+            validateOrderStatusUpdate(role, order.getOrderStatus(), newStatus);
+        }
+        catch (IllegalArgumentException | IllegalStateException e) {
+            return new UpdateOrderResponse(false, e.getMessage());
+        }
 
         order.setOrderStatus(newStatus);
         orderRepository.save(order);
+        return new UpdateOrderResponse(true, "Update success");
     }
 
     private boolean verifyOwnership(User user, UserRole role, Order order) {
@@ -138,7 +148,7 @@ public class BookingService {
         };
     }
 
-    private void validateOrderStatusUpdate(UserRole role, OrderStatus currentStatus, OrderStatus newStatus) {
+    private void validateOrderStatusUpdate(UserRole role, OrderStatus currentStatus, OrderStatus newStatus) throws IllegalArgumentException, IllegalStateException {
         switch (role) {
             case ADMIN -> {
             }

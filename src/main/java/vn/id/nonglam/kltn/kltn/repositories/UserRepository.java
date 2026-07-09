@@ -4,11 +4,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-    User findByUsername(String username);
+    Optional<User> findByUsername(String username);
     User findByEmail(String email);
     User findByUsernameAndPassword(String username, String password);
     User findByEmailAndPassword(String email, String password);

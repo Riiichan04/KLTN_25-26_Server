@@ -26,8 +26,8 @@ public class AdminHotelService {
     private final RoomUtilityRepository roomUtilityRepository;
     private final RoomTypeRepository roomTypeRepository;
 
-    public Page<GetAdminSnapshotHotelResponse> getHotels(Pageable pageable) {
-        return hotelRepository.getHotels(pageable);
+    public Page<GetAdminSnapshotHotelResponse> getHotels(String keyword, Pageable pageable) {
+        return hotelRepository.getHotels(keyword, pageable);
     }
 
     public AdminHotelResponse getHotelById(UUID id) {
@@ -44,8 +44,11 @@ public class AdminHotelService {
             owner = new AdminHotelResponse.OwnerResponse(o.getId(), o.getUsername(), o.getAvatarUrl(), o.getEmail(), o.getPhone(), o.getGender(), o.isActive());
         }
         Address a = h.getAddress();
-        AdminHotelResponse.AddressResponse address = new AdminHotelResponse.AddressResponse(a.getId(), a.getStreet(), a.getWard(), a.getProvince(),
-                a.getPostalCode(), a.getLatitude(), a.getLongitude(), a.isActive(), a.getCreatedAt(), a.getUpdatedAt());
+        AdminHotelResponse.AddressResponse address = null;
+        if(a != null) {
+            address = new AdminHotelResponse.AddressResponse(a.getId(), a.getStreet(), a.getWard(), a.getProvince(),
+                    a.getPostalCode(), a.getLatitude(), a.getLongitude(), a.isActive(), a.getCreatedAt(), a.getUpdatedAt());
+        }
 
         Set<AdminHotelResponse.RoomTypeResponse> roomTypes = h.getRoomTypes().stream().map(rt -> mapperRoomTypeToResponse(rt)).collect(Collectors.toSet());
 
@@ -92,7 +95,8 @@ public class AdminHotelService {
     @Transactional
     public AdminHotelResponse.OwnerResponse changeOwner(ChangeOwnerHotelRequest request) {
         Hotel h = hotelRepository.getReferenceById(request.hotelId());
-        User u = userRepository.findUserById(request.userId());
+        User u = userRepository.findByUsername(request.username()).orElseThrow(() ->
+                new NoSuchElementException("Không tìm thấy username " + request.username()));
 
         h.setOwner(u);
         hotelRepository.save(h);
@@ -284,5 +288,17 @@ public class AdminHotelService {
         RoomType savedRoomType = roomTypeRepository.save(roomType);
 
         return mapperRoomTypeToResponse(savedRoomType);
+    }
+
+    @Transactional
+    public Boolean createHotel(AddHotelRequest req) {
+        Hotel hotel = Hotel.builder()
+                .name(req.name())
+                .description(req.description())
+                .address(new Address())
+                .isActive(true)
+                .build();
+        hotel = hotelRepository.save(hotel);
+        return  hotel.getId() != null;
     }
 }

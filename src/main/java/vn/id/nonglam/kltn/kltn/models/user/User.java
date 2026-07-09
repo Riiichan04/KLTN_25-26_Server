@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.common.enums.Gender;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
+import vn.id.nonglam.kltn.kltn.common.enums.UserType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,6 +53,10 @@ public class User {
 
     @Column(name = "verified", nullable = false)
     private boolean isVerified;
+
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "TEXT")
+    private UserType userType;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

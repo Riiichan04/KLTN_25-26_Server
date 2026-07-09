@@ -57,9 +57,6 @@ public class RoomType {
     private List<RoomDetail> roomDetails;
 
     @Column
-    private double depositedPercent;
-
-    @Column
     private boolean isActive;
 
     @Column

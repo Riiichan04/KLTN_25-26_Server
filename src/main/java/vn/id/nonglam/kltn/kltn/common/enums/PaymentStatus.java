@@ -1,8 +1,7 @@
 package vn.id.nonglam.kltn.kltn.common.enums;
 
 public enum PaymentStatus {
-    UNPAID,
-    DEPOSITED,
+    PENDING,
     PAID,
-    PARTIAL_PAID
+    COD
 }

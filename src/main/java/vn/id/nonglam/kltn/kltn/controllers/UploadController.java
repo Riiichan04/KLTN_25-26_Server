@@ -82,4 +82,9 @@ public class UploadController {
                     .body(result.toString());
         }
     }
+
+    @GetMapping("/signature")
+    public ResponseEntity<Map<String, Object>> getUploadSignature(@RequestParam String folderName) {
+        return ResponseEntity.ok(service.getSignature(folderName));
+    }
 }

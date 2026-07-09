@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
+import vn.id.nonglam.kltn.kltn.models.auth.UserPrinciple;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,11 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
         try {
             if (jwtTokenProvider.isValid(token)) {
-                UUID userId = jwtTokenProvider.extractUserId(token);
-                UserRole role = jwtTokenProvider.extractUserRole(token);
+                UserPrinciple userPrinciple = jwtTokenProvider.extractUserPrinciple(token);
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                        userPrinciple, null, List.of(new SimpleGrantedAuthority("ROLE_" + userPrinciple.role()))
                 );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

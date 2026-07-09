@@ -2,7 +2,7 @@ package vn.id.nonglam.kltn.kltn.dto.response.admin;
 
 import java.util.UUID;
 
-public interface GetSnapshotHotelResponse {
+public interface GetAdminSnapshotHotelResponse {
     UUID getId();
     String getName();
     String getThumbnail();

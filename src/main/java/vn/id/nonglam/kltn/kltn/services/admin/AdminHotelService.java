@@ -5,17 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.id.nonglam.kltn.kltn.dto.request.admin.ChangeActiveHotelRequest;
-import vn.id.nonglam.kltn.kltn.dto.request.admin.ChangeOwnerHotelRequest;
-import vn.id.nonglam.kltn.kltn.dto.request.admin.UpdateHotelAdminRequest;
+import vn.id.nonglam.kltn.kltn.dto.request.admin.*;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.AdminHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveHotelResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveRoomTypeResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.GetAdminSnapshotHotelResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.*;
 import vn.id.nonglam.kltn.kltn.models.user.User;
-import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
-import vn.id.nonglam.kltn.kltn.repositories.HotelUtilityRepository;
-import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
+import vn.id.nonglam.kltn.kltn.repositories.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +23,8 @@ public class AdminHotelService {
     private final HotelRepository hotelRepository;
     private final UserRepository userRepository;
     private final HotelUtilityRepository hotelUtilityRepository;
+    private final RoomUtilityRepository roomUtilityRepository;
+    private final RoomTypeRepository roomTypeRepository;
 
     public Page<GetAdminSnapshotHotelResponse> getHotels(Pageable pageable) {
         return hotelRepository.getHotels(pageable);
@@ -48,12 +47,7 @@ public class AdminHotelService {
         AdminHotelResponse.AddressResponse address = new AdminHotelResponse.AddressResponse(a.getId(), a.getStreet(), a.getWard(), a.getProvince(),
                 a.getPostalCode(), a.getLatitude(), a.getLongitude(), a.isActive(), a.getCreatedAt(), a.getUpdatedAt());
 
-        Set<AdminHotelResponse.RoomTypeResponse> roomTypes = h.getRoomTypes().stream().map(rt -> new AdminHotelResponse.RoomTypeResponse(
-                rt.getId(), rt.getName(), rt.getDescription(), rt.getCapacity(), rt.getPrice(),
-                rt.getUtilities().stream().map(u -> new AdminHotelResponse.RoomUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toSet()),
-                rt.getImages().stream().map(i -> new AdminHotelResponse.RoomTypeImageResponse(i.getId(), i.getPath())).collect(Collectors.toSet()),
-                rt.getRoomDetails().stream().map(rd -> new AdminHotelResponse.RoomDetailResponse(rd.getId(), rd.getRoomCode(), rd.isActive())).collect(Collectors.toSet()),
-                rt.getDepositedPercent())).collect(Collectors.toSet());
+        Set<AdminHotelResponse.RoomTypeResponse> roomTypes = h.getRoomTypes().stream().map(rt -> mapperRoomTypeToResponse(rt)).collect(Collectors.toSet());
 
         Set<AdminHotelResponse.HotelUtilityResponse> utilities = h.getUtilities().stream().map(u -> new AdminHotelResponse.HotelUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toSet());
 
@@ -66,10 +60,33 @@ public class AdminHotelService {
         );
     }
 
+    private AdminHotelResponse.RoomTypeResponse mapperRoomTypeToResponse(RoomType rt) {
+        return new AdminHotelResponse.RoomTypeResponse(
+                rt.getId(), rt.getName(), rt.getDescription(), rt.getCapacity(), rt.getPrice(),
+                rt.getUtilities().stream().map(u -> new AdminHotelResponse.RoomUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toSet()),
+                rt.getImages().stream().map(i -> new AdminHotelResponse.RoomTypeImageResponse(i.getId(), i.getPath())).collect(Collectors.toSet()),
+                rt.getRoomDetails().stream().map(rd -> new AdminHotelResponse.RoomDetailResponse(rd.getId(), rd.getRoomCode(), rd.isActive())).collect(Collectors.toSet()),
+                rt.getDepositedPercent(), rt.isActive());
+    }
+
+    @Transactional
     public ChangeActiveHotelResponse changeActive(ChangeActiveHotelRequest request) {
-        Hotel h = hotelRepository.getReferenceById(request.id());
-        h.setActive(request.active());
-        return new ChangeActiveHotelResponse(hotelRepository.save(h) != null, request.active());
+        Hotel hotel = hotelRepository.findById(request.id())
+                .orElseThrow(() -> new NoSuchElementException("Hotel not found with ID: " + request.id()));
+
+        hotel.setActive(request.active());
+
+        return new ChangeActiveHotelResponse(true, request.active());
+    }
+
+    @Transactional
+    public ChangeActiveRoomTypeResponse changeActiveRoomType(ChangeActiveRoomTypeRequest request) {
+        RoomType roomType = roomTypeRepository.findById(request.id())
+                .orElseThrow(() -> new NoSuchElementException("Room Type not found with ID: " + request.id()));
+
+        roomType.setActive(request.active());
+
+        return new ChangeActiveRoomTypeResponse(true, request.active());
     }
 
     @Transactional
@@ -86,6 +103,11 @@ public class AdminHotelService {
     public List<AdminHotelResponse.HotelUtilityResponse> getHotelUtilities() {
         return hotelUtilityRepository.findAllByIsActive(true).stream().map(u ->
                 new AdminHotelResponse.HotelUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toList());
+    }
+
+    public List<AdminHotelResponse.RoomUtilityResponse> getRoomUtilities() {
+        return roomUtilityRepository.findAllByIsActive(true).stream().map(u ->
+                new AdminHotelResponse.RoomUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toList());
     }
 
     @Transactional
@@ -168,5 +190,100 @@ public class AdminHotelService {
 
         Hotel savedProduct = hotelRepository.save(hotel);
         return mapperHotelToGetHotelResponse(savedProduct);
+    }
+
+    @Transactional
+    public AdminHotelResponse.RoomTypeResponse updateRoomType(UpdateRoomTypeAdminRequest req) {
+        RoomType roomType;
+
+        if (req.id() != null) {
+            roomType = roomTypeRepository.findById(req.id()).orElseThrow(() ->
+                    new NoSuchElementException("Không tìm thấy hạng phòng với ID: " + req.id()));
+        } else {
+            roomType = new RoomType();
+            Hotel hotel = hotelRepository.findById(req.hotelId()).orElseThrow(() ->
+                    new NoSuchElementException("Không tìm thấy khách sạn với ID: " + req.hotelId()));
+            roomType.setHotel(hotel);
+        }
+
+        roomType.setName(req.name());
+        roomType.setDescription(req.description());
+        roomType.setPrice(req.price());
+        roomType.setCapacity(req.capacity());
+        roomType.setDepositedPercent(req.depositedPercent());
+
+        Set<RoomTypeImage> currentImages = roomType.getImages();
+        if (currentImages == null) {
+            currentImages = new HashSet<>();
+        }
+
+        Map<String, RoomTypeImage> existingImagesMap = currentImages.stream()
+                .collect(Collectors.toMap(RoomTypeImage::getPath, image -> image, (existing, replacement) -> existing));
+
+        Set<RoomTypeImage> updatedImages = new HashSet<>();
+        if (req.images() != null) {
+            for (String url : req.images()) {
+                if (existingImagesMap.containsKey(url)) {
+                    updatedImages.add(existingImagesMap.get(url));
+                } else {
+                    RoomTypeImage newImage = new RoomTypeImage();
+                    newImage.setPath(url);
+                    newImage.setRoomType(roomType);
+                    updatedImages.add(newImage);
+                }
+            }
+        }
+
+        if (roomType.getImages() != null) {
+            roomType.getImages().clear();
+            roomType.getImages().addAll(updatedImages);
+        } else {
+            roomType.setImages(updatedImages);
+        }
+
+        if (req.roomUtilities() != null) {
+            Set<RoomUtility> utilities = req.roomUtilities().stream()
+                    .map(roomUtilityRepository::getReferenceById)
+                    .collect(Collectors.toSet());
+            roomType.setUtilities(utilities);
+        }
+
+        List<RoomDetail> currentDetails = roomType.getRoomDetails();
+        if (currentDetails == null) {
+            currentDetails = new ArrayList<>();
+        }
+
+        Map<UUID, RoomDetail> existingDetailsMap = currentDetails.stream()
+                .filter(d -> d.getId() != null)
+                .collect(Collectors.toMap(RoomDetail::getId, d -> d));
+
+        List<RoomDetail> updatedDetails = new ArrayList<>();
+        if (req.roomDetails() != null) {
+            for (var detailReq : req.roomDetails()) {
+                RoomDetail detail;
+
+                if (detailReq.id() != null && existingDetailsMap.containsKey(detailReq.id())) {
+                    detail = existingDetailsMap.get(detailReq.id());
+                } else {
+                    detail = new RoomDetail();
+                    detail.setRoomType(roomType);
+                }
+
+                detail.setRoomCode(detailReq.roomCode());
+                detail.setActive(detailReq.isActive());
+                updatedDetails.add(detail);
+            }
+        }
+
+        if (roomType.getRoomDetails() != null) {
+            roomType.getRoomDetails().clear();
+            roomType.getRoomDetails().addAll(updatedDetails);
+        } else {
+            roomType.setRoomDetails(updatedDetails);
+        }
+
+        RoomType savedRoomType = roomTypeRepository.save(roomType);
+
+        return mapperRoomTypeToResponse(savedRoomType);
     }
 }

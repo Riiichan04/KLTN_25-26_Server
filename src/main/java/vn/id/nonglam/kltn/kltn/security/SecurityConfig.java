@@ -38,8 +38,10 @@ public class SecurityConfig {
                         .requestMatchers("/home/**").permitAll()
                         .requestMatchers("/hotel/**").permitAll() //TODO: Create, update, delete must filter by role later
                         .requestMatchers("/search/**").permitAll()
+                        .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/upload/**").permitAll()
                         .requestMatchers("/booking/choose-room").permitAll()
-                        .requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
+                        //.requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -53,7 +55,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of("*"));
 
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
 

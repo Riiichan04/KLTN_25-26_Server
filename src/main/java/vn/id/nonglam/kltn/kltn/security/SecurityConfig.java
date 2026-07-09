@@ -38,10 +38,9 @@ public class SecurityConfig {
                         .requestMatchers("/home/**").permitAll()
                         .requestMatchers("/hotel/**").permitAll() //TODO: Create, update, delete must filter by role later
                         .requestMatchers("/search/**").permitAll()
-                        .requestMatchers("/admin/**").permitAll()
-                        .requestMatchers("/upload/**").permitAll()
+
                         .requestMatchers("/booking/choose-room").permitAll()
-                        //.requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
+                        .requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

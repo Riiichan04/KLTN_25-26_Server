@@ -28,7 +28,7 @@ public record AdminHotelResponse(UUID id, String name, OwnerResponse owner, Set<
     public record RoomTypeResponse(UUID id, String name, String description, int capacity,
                                    BigDecimal price, Set<RoomUtilityResponse> roomUtilities,
                                    Set<RoomTypeImageResponse> roomTypeImages, Set<RoomDetailResponse> roomDetails,
-                                   double depositedPercent, Boolean isActive) {}
+                                   Boolean isActive) {}
 
     public record AddressResponse(UUID id, String street, String ward, String province, int postalCode, double latitude, double longitude, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {}
 

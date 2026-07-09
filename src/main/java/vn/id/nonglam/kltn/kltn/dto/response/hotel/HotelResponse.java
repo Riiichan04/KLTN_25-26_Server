@@ -16,7 +16,7 @@ public record HotelResponse(UUID id, String name, int countComments, double avgR
 
     public record RoomTypeResponse(UUID id, String name, String description, int capacity,
                                    BigDecimal price, Set<RoomUtilityResponse> roomUtilities,
-                                   Set<String> roomTypeImages, double depositedPercent) {}
+                                   Set<String> roomTypeImages) {}
 
     public record AddressResponse(UUID id, String street, String ward, String province, int postalCode, double latitude, double longitude) {}
 

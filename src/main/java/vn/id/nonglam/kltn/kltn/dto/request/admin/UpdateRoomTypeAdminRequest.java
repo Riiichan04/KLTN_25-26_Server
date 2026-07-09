@@ -11,7 +11,6 @@ public record UpdateRoomTypeAdminRequest(
         String description,
         BigDecimal price,
         Integer capacity,
-        Integer depositedPercent,
         List<String> images,
         List<UUID> roomUtilities,
         List<RoomDetailAdminRequest> roomDetails

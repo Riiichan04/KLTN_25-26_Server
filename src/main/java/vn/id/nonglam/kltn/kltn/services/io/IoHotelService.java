@@ -185,7 +185,6 @@ public class IoHotelService {
                 room.setDescription(rCsv.getDescription());
                 room.setCapacity(rCsv.getCapacity());
                 room.setPrice(rCsv.getPrice());
-                room.setDepositedPercent(rCsv.getDepositedPercent());
                 room.setHotel(allHotels.get(hotelIndex % allHotels.size()));
 
                 if (rCsv.getImagesList() != null && !rCsv.getImagesList().isEmpty()) {

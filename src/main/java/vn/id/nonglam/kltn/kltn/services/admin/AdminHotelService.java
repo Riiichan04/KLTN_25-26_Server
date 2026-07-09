@@ -66,7 +66,7 @@ public class AdminHotelService {
                 rt.getUtilities().stream().map(u -> new AdminHotelResponse.RoomUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toSet()),
                 rt.getImages().stream().map(i -> new AdminHotelResponse.RoomTypeImageResponse(i.getId(), i.getPath())).collect(Collectors.toSet()),
                 rt.getRoomDetails().stream().map(rd -> new AdminHotelResponse.RoomDetailResponse(rd.getId(), rd.getRoomCode(), rd.isActive())).collect(Collectors.toSet()),
-                rt.getDepositedPercent(), rt.isActive());
+                rt.isActive());
     }
 
     @Transactional
@@ -210,7 +210,6 @@ public class AdminHotelService {
         roomType.setDescription(req.description());
         roomType.setPrice(req.price());
         roomType.setCapacity(req.capacity());
-        roomType.setDepositedPercent(req.depositedPercent());
 
         Set<RoomTypeImage> currentImages = roomType.getImages();
         if (currentImages == null) {

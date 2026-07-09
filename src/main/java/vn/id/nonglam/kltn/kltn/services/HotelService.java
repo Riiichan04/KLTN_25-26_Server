@@ -89,7 +89,7 @@ public class HotelService {
         return roomTypes.stream().map(r -> new HotelResponse.RoomTypeResponse(r.getId(),
                 r.getName(), r.getDescription(), r.getCapacity(),
                 r.getPrice(), mapperRoomUtility(r.getUtilities()),
-                mapperRoomTypeImage(r.getImages()), r.getDepositedPercent()))
+                mapperRoomTypeImage(r.getImages())))
                 .collect(Collectors.toSet());
     }
 

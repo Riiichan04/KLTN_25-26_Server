@@ -67,6 +67,7 @@ public class RoomType {
 
     @PrePersist
     protected void onCreate() {
+        this.isActive = true;
         this.createdAt = LocalDate.now();
         this.updatedAt = LocalDate.now();
     }

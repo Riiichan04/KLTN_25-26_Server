@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/home/**").permitAll()
                         .requestMatchers("/hotel/**").permitAll() //TODO: Create, update, delete must filter by role later
                         .requestMatchers("/search/**").permitAll()
+
                         .requestMatchers("/booking/choose-room").permitAll()
                         .requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated()
@@ -53,7 +54,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of("*"));
 
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
 

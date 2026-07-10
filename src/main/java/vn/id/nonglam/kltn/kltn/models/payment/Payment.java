@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.models.order;
+package vn.id.nonglam.kltn.kltn.models.payment;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.id.nonglam.kltn.kltn.common.enums.PaymentMethod;
-import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
+import vn.id.nonglam.kltn.kltn.models.order.Order;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

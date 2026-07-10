@@ -12,6 +12,7 @@ import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
+import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomType;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
@@ -24,7 +25,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +73,10 @@ public class BookingService {
         if (orderRequest.checkin().isAfter(orderRequest.checkout()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Checkin date must before checkout date!");
 
+        if (orderRequest.roomDetailsId() == null || orderRequest.roomDetailsId().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You must choose at least 1 room!");
+        }
+
         List<RoomDetail> roomDetails = orderRequest.roomDetailsId().stream().map(id -> {
             boolean isValid = orderDetailRepository.checkValidRoomDetail(id, orderRequest.checkin(), orderRequest.checkout());
             boolean isExits = roomDetailRepository.existsByIdAndActiveTrue(id);
@@ -85,12 +92,23 @@ public class BookingService {
         order.setUser(user);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNote(orderRequest.note());
-//        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setCheckInDate(orderRequest.checkin());
         order.setCheckOutDate(orderRequest.checkout());
-        order.setTotalCapacity(order.getTotalCapacity());
+        order.setTotalCapacity(orderRequest.totalCapacity());
+
+        Set<Hotel> listHotel = roomDetails.stream().map(
+                roomDetail -> roomDetail.getRoomType().getHotel()
+        ).collect(Collectors.toSet());
+
+        if (listHotel.size() > 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can book only 1 hotel each booking");
+        }
+        order.setHotel(listHotel.iterator().next());
+
         order = orderRepository.save(order);
 
+        User owner = order.getHotel().getOwner();
+        double platformFeePercent = PlatformFee.getPlatformFee(owner.getUserType());
         BigDecimal totalPrice = BigDecimal.valueOf(0);
         for (RoomDetail roomDetail : roomDetails) {
             OrderDetail orderDetail = new OrderDetail();
@@ -103,7 +121,6 @@ public class BookingService {
             orderDetail.setActualPrice(actualPrice);
 
             //Platform price
-            double platformFeePercent = PlatformFee.getPlatformFee(user.getUserType());
             BigDecimal platformFee = actualPrice.multiply(BigDecimal.valueOf(platformFeePercent));
             orderDetail.setPlatformFee(platformFee);
 

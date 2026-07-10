@@ -23,6 +23,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Hotel {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -115,14 +115,16 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     h.id AS id, 
     h.name AS name, 
     h.thumbnail AS thumbnail, 
-    h.address.street AS street, 
-    h.address.ward AS ward, 
-    h.address.province AS province, 
+    a.street AS street, 
+    a.ward AS ward, 
+    a.province AS province, 
     h.viewCount AS viewCount, 
     h.isActive AS isActive
-    FROM Hotel h
+    FROM Hotel h 
+    LEFT JOIN h.address a 
+    WHERE h.name ILIKE concat('%', :keyword, '%') 
 """)
-    Page<GetAdminSnapshotHotelResponse> getHotels(Pageable pageable);
+    Page<GetAdminSnapshotHotelResponse> getHotels(@Param("keyword") String keyword, Pageable pageable);
 
     @EntityGraph(attributePaths = {"address", "roomTypes", "images", "utilities", "regulations"})
     Optional<Hotel> findById(UUID id);

@@ -2,6 +2,9 @@ package vn.id.nonglam.kltn.kltn.controllers.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.id.nonglam.kltn.kltn.dto.request.admin.*;
@@ -14,6 +17,8 @@ import vn.id.nonglam.kltn.kltn.services.admin.AdminHotelService;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController
@@ -22,9 +27,19 @@ import java.util.UUID;
 public class HotelManagementController {
     private final AdminHotelService adminHotelService;
 
+    @PostMapping("/create")
+    public ResponseEntity<Boolean> createHotel(@RequestBody AddHotelRequest request) {
+        return ResponseEntity.ok(adminHotelService.createHotel(request));
+    }
+
     @GetMapping("/get")
-    public ResponseEntity<Page<GetAdminSnapshotHotelResponse>> getSnapshotHotels(Pageable pageable) {
-        return ResponseEntity.ok(adminHotelService.getHotels(pageable));
+    public ResponseEntity<Page<GetAdminSnapshotHotelResponse>> getSnapshotHotels(@RequestParam(required = false, defaultValue = "") String keyword,
+                                                                                 @PageableDefault(
+                                                                                         size = 10,
+                                                                                         sort = "createdAt",
+                                                                                         direction = Sort.Direction.DESC
+                                                                                 ) Pageable pageable) {
+        return ResponseEntity.ok(adminHotelService.getHotels(keyword, pageable));
     }
 
     @GetMapping("/{id}")
@@ -39,9 +54,16 @@ public class HotelManagementController {
     }
 
     @PatchMapping("/owner")
-    public ResponseEntity<AdminHotelResponse.OwnerResponse> changeOwner(
-            @RequestBody ChangeOwnerHotelRequest request) {
-        return ResponseEntity.ok(adminHotelService.changeOwner(request));
+    public ResponseEntity<?> changeOwner(@RequestBody ChangeOwnerHotelRequest request) { // Đổi thành <?>
+        try {
+            var response = adminHotelService.changeOwner(request);
+            return ResponseEntity.ok(response);
+
+        } catch (NoSuchElementException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 
     @GetMapping("/utilities")

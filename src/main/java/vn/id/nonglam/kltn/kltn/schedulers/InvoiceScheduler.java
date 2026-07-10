@@ -3,6 +3,7 @@ package vn.id.nonglam.kltn.kltn.schedulers;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,15 +60,21 @@ public class InvoiceScheduler {
 
                 invoiceRepository.save(invoice);
 
-                String emailBody = String.format(
-                        "Kính gửi %s,\n\nHóa đơn phí nền tảng tháng %s cho các khách sạn của bạn là %s VND.\nVui lòng thanh toán trước ngày %s.\n\nTrân trọng!",
+                String dueDateStr = invoice.getDueDate() != null
+                        ? invoice.getDueDate().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        : "7 ngày tới";
+
+                //FIXME: Temp URL
+                String paymentUrl = "http://localhost:3000/owner/invoices/pay/" + invoice.getId();
+
+                mailService.sendInvoiceEmail(
+                        owner.getEmail(),
                         owner.getUsername(),
                         lastMonth.toString(),
                         totalFee,
-
-                        invoice.getDueDate() != null ? invoice.getDueDate().toLocalDate() : "7 ngày tới"
+                        dueDateStr,
+                        paymentUrl
                 );
-
             }
         });
     }

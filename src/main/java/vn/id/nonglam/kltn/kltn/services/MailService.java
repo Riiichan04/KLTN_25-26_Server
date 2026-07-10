@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.math.BigDecimal;
+import java.util.Locale;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -43,6 +46,28 @@ public class MailService {
         }
     }
 
+    @Async
+    public void sendInvoiceEmail(String to, String ownerName, String billingMonth, BigDecimal amount, String dueDate, String paymentUrl) {
+        try {
+            Context context = new Context();
+            context.setVariable("ownerName", ownerName);
+            context.setVariable("billingMonth", billingMonth);
+
+            java.text.NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            context.setVariable("amount", format.format(amount));
+
+            context.setVariable("dueDate", dueDate);
+            context.setVariable("paymentUrl", paymentUrl);
+
+            String htmlContent = templateEngine.process("email/invoice-notification", context);
+
+            sendHtmlMail(to, "HomeBook - Hóa Đơn Phí Nền Tảng Tháng " + billingMonth, htmlContent);
+
+            log.info("Invoice email sent successfully to {}", to);
+        } catch (Exception e) {
+            log.error("CRITICAL: Could not send invoice email to {}. Error: {}", to, e.getMessage());
+        }
+    }
 
     private void sendHtmlMail(String to, String subject, String htmlContent) {
         try {

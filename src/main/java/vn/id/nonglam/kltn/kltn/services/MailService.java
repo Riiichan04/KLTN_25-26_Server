@@ -69,6 +69,28 @@ public class MailService {
         }
     }
 
+    @Async
+    public void sendAccountSuspendedEmail(String to, String ownerName, String billingMonth, BigDecimal amount, String paymentUrl) {
+        try {
+            Context context = new Context();
+            context.setVariable("ownerName", ownerName);
+            context.setVariable("billingMonth", billingMonth);
+
+            java.text.NumberFormat format = java.text.NumberFormat.getInstance(new java.util.Locale("vi", "VN"));
+            context.setVariable("amount", format.format(amount));
+
+            context.setVariable("paymentUrl", paymentUrl);
+
+            String htmlContent = templateEngine.process("email/account-suspended", context);
+
+            sendHtmlMail(to, "Khẩn cấp: Tài khoản HomeBook của bạn đã bị tạm khóa", htmlContent);
+
+            log.info("Suspension email sent successfully to {}", to);
+        } catch (Exception e) {
+            log.error("CRITICAL: Could not send suspension email to {}. Error: {}", to, e.getMessage());
+        }
+    }
+
     private void sendHtmlMail(String to, String subject, String htmlContent) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

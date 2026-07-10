@@ -11,12 +11,14 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import vn.id.nonglam.kltn.kltn.common.enums.InvoiceStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
 import vn.id.nonglam.kltn.kltn.models.payment.PlatformInvoice;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.OrderRepository;
 import vn.id.nonglam.kltn.kltn.repositories.PlatformInvoiceRepository;
+import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 import vn.id.nonglam.kltn.kltn.services.MailService;
 
 @Component
@@ -29,6 +31,7 @@ public class InvoiceScheduler {
 
     // Giả sử sàn thu phí 10% doanh thu
     private static final BigDecimal PLATFORM_FEE_RATE = new BigDecimal("0.10");
+    private final UserRepository userRepository;
 
     @Scheduled(cron = "0 0 0 1 * ?")
     public void generateMonthlyInvoices() {
@@ -77,5 +80,33 @@ public class InvoiceScheduler {
                 );
             }
         });
+    }
+
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void suspendOverdueUsers() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<PlatformInvoice> overdueInvoices = invoiceRepository
+                .findByStatusAndDueDateBefore(InvoiceStatus.PENDING, now);
+
+        for (PlatformInvoice invoice : overdueInvoices) {
+            invoice.setStatus(InvoiceStatus.OVERDUE);
+            invoiceRepository.save(invoice);
+
+            User owner = invoice.getUser();
+            owner.setActive(false);
+            userRepository.save(owner);
+
+            //FIXME: Fix this URL
+            String paymentUrl = "http://localhost:3000/owner/invoices/pay/" + invoice.getId();
+
+            mailService.sendAccountSuspendedEmail(
+                    owner.getEmail(),
+                    owner.getUsername(),
+                    invoice.getBillingName(),
+                    invoice.getAmount(),
+                    paymentUrl
+            );
+        }
     }
 }

@@ -54,16 +54,8 @@ public class HotelManagementController {
     }
 
     @PatchMapping("/owner")
-    public ResponseEntity<?> changeOwner(@RequestBody ChangeOwnerHotelRequest request) { // Đổi thành <?>
-        try {
-            var response = adminHotelService.changeOwner(request);
-            return ResponseEntity.ok(response);
-
-        } catch (NoSuchElementException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", e.getMessage()));
-        }
+    public ResponseEntity<?> changeOwner(@RequestBody ChangeOwnerHotelRequest request) {
+        return ResponseEntity.ok(adminHotelService.changeOwner(request));
     }
 
     @GetMapping("/utilities")

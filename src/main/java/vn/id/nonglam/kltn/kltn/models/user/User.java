@@ -72,6 +72,7 @@ public class User {
     @PrePersist
     protected void onCreate() {
         // FIXME: add default avatar url later.
+        isActive = true;
         avatarUrl = "";
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();

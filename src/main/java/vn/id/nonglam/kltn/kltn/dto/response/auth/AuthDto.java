@@ -1,19 +1,16 @@
 package vn.id.nonglam.kltn.kltn.dto.response.auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import vn.id.nonglam.kltn.kltn.common.enums.Gender;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AuthDto {
     private UUID id;
     private String email;

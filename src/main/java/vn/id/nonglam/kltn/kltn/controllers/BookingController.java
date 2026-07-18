@@ -1,11 +1,16 @@
 package vn.id.nonglam.kltn.kltn.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
+import vn.id.nonglam.kltn.kltn.dto.request.order.OrderStatusCount;
 import vn.id.nonglam.kltn.kltn.dto.request.order.UpdateOrderStatusRequest;
+import vn.id.nonglam.kltn.kltn.dto.response.order.HistoryOrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
 import vn.id.nonglam.kltn.kltn.models.user.User;
@@ -15,6 +20,7 @@ import vn.id.nonglam.kltn.kltn.services.BookingService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -44,5 +50,15 @@ public class BookingController {
         }
         UpdateOrderResponse result = bookingService.updateOrderStatus(id, statusRequest.status());
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity<Page<HistoryOrderResponse>> getOrder(@RequestParam OrderStatus status, Pageable pageable) {
+        return ResponseEntity.ok(bookingService.getHistoryOrders(status, pageable));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<List<OrderStatusCount>> countOrders() {
+        return ResponseEntity.ok(bookingService.countOrders());
     }
 }

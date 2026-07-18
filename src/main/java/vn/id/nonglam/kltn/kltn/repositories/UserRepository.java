@@ -18,6 +18,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     User findByUsernameAndPassword(String username, String password);
     User findByEmailAndPassword(String email, String password);
     User findUserById(UUID id);
+    User findUserByIdAndIsActive(UUID id, boolean active);
 
     @Query(value = """
         SELECT u FROM User u

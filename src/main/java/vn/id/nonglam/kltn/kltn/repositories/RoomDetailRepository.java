@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface RoomDetailRepository extends JpaRepository<RoomDetail, UUID> {
-    boolean existsByIdAndActiveTrue(UUID id);
+    boolean existsByIdAndIsActiveTrue(UUID id);
     @EntityGraph(attributePaths = {"roomType"})
-    RoomDetail findByIdAndActiveTrue(UUID id);
+    RoomDetail findByIdAndIsActiveTrue(UUID id);
 }

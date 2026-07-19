@@ -79,12 +79,12 @@ public class BookingService {
 
         List<RoomDetail> roomDetails = orderRequest.roomDetailsId().stream().map(id -> {
             boolean isValid = orderDetailRepository.checkValidRoomDetail(id, orderRequest.checkin(), orderRequest.checkout());
-            boolean isExits = roomDetailRepository.existsByIdAndActiveTrue(id);
+            boolean isExits = roomDetailRepository.existsByIdAndIsActiveTrue(id);
 
             if (!isValid || !isExits) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your chosen room is not valid!");
             }
-            return roomDetailRepository.findByIdAndActiveTrue(id);
+            return roomDetailRepository.findByIdAndIsActiveTrue(id);
         }).toList();
 
         User user = userRepository.getReferenceById(userId);

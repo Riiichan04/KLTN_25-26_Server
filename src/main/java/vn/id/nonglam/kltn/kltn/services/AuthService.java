@@ -66,6 +66,8 @@ public class AuthService {
         dto.setVerified(targetUser.isVerified());
         dto.setRole(targetUser.getRole());
         dto.setUsername(targetUser.getUsername());
+        dto.setGender(targetUser.getGender());
+        dto.setPhone(targetUser.getPhone());
         dto.setVerified(targetUser.isVerified());
         dto.setJwtToken(jwtToken);
         return dto;

@@ -45,7 +45,8 @@ public class User {
     @Column(name = "gender")
     private Gender gender;
 
-    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "TEXT")
     private UserRole role;
 
     @Column(name = "active", nullable = false)
@@ -71,8 +72,14 @@ public class User {
     @PrePersist
     protected void onCreate() {
         // FIXME: add default avatar url later.
+        isActive = true;
         avatarUrl = "";
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 }

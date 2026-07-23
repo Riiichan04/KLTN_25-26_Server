@@ -4,4 +4,4 @@ import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 
 import java.util.UUID;
 
-public record ChangeUserRoleRequest(UUID userId, UserRole role) {}
+public record UpdateUserRequest(UUID id, Boolean active, UserRole role) {}

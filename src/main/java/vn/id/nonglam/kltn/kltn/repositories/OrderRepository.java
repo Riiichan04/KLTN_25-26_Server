@@ -29,6 +29,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             @Param("endDate") LocalDateTime endDate,
             @Param("status") OrderStatus status
     );
+    Page<Order> findByUser_IdAndOrderStatus(UUID userId, OrderStatus status, Pageable pageable);
+
+    @Query("SELECT o.orderStatus AS status, COUNT(o) AS count FROM Order o WHERE o.user.id = :userId GROUP BY o.orderStatus")
+    List<OrderStatusCount> countOrderStatusByUserId(@Param("userId") UUID userId);
 
     List<Order> findByUser_Id(UUID user_id);
 }

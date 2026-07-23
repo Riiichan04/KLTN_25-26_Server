@@ -8,7 +8,6 @@ import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.order.UpdateOrderStatusRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
-import vn.id.nonglam.kltn.kltn.dto.response.order.UserOrderResponse;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
@@ -45,6 +44,16 @@ public class BookingController {
         }
         UpdateOrderResponse result = bookingService.updateOrderStatus(id, statusRequest.status());
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity<Page<HistoryOrderResponse>> getOrder(@RequestParam OrderStatus status, Pageable pageable) {
+        return ResponseEntity.ok(bookingService.getHistoryOrders(status, pageable));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<List<OrderStatusCount>> countOrders() {
+        return ResponseEntity.ok(bookingService.countOrders());
     }
 
     @GetMapping("/get/user/{id}")

@@ -1,15 +1,18 @@
 package vn.id.nonglam.kltn.kltn.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.id.nonglam.kltn.kltn.common.constants.PlatformFee;
 import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
-import vn.id.nonglam.kltn.kltn.common.enums.PaymentStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
+import vn.id.nonglam.kltn.kltn.dto.request.order.OrderStatusCount;
+import vn.id.nonglam.kltn.kltn.dto.response.order.HistoryOrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UserOrderResponse;
@@ -210,5 +213,87 @@ public class BookingService {
         UUID userId = SecurityUtil.currentUserId().orElse(null);
         if (userId == null) return null;
         return userRepository.findUserById(userId);
+    }
+
+    public Page<HistoryOrderResponse> getHistoryOrders(OrderStatus status, Pageable pageable) {
+        UUID userId = SecurityUtil.currentUserId().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+
+        Page<Order> orders = orderRepository.findByUser_IdAndOrderStatus(userId, status, pageable);
+        return orders.map(this::mapToHistoryOrderResponse);
+    }
+
+    private HistoryOrderResponse mapToHistoryOrderResponse(Order order) {
+        HistoryOrderResponse.HotelResponse hotelResponse = null;
+        if (order.getHotel() != null) {
+            hotelResponse = new HistoryOrderResponse.HotelResponse(
+                    order.getHotel().getId(),
+                    order.getHotel().getName(),
+                    order.getHotel().getThumbnail()
+            );
+        } else {
+            hotelResponse = new HistoryOrderResponse.HotelResponse(null, "Khách sạn đã ngừng hoạt động", null);
+        }
+
+        List<HistoryOrderResponse.RoomTypeSnapShotResponse> roomTypeResponses = order.getOrderDetails().stream()
+                .collect(Collectors.groupingBy(detail -> {
+                    if (detail.getRoomDetail() == null || detail.getRoomDetail().getRoomType() == null) {
+                        return "UNKNOWN_ROOM_TYPE";
+                    }
+                    return detail.getRoomDetail().getRoomType().getId().toString();
+                }))
+                .entrySet().stream()
+                .map(entry -> {
+                    String typeKey = entry.getKey();
+                    var orderDetailsInRoomType = entry.getValue();
+                    String roomTypeName = "Phòng đã không còn tồn tại";
+                    UUID roomTypeId = null;
+
+                    if (!"UNKNOWN_ROOM_TYPE".equals(typeKey)) {
+                        var firstDetail = orderDetailsInRoomType.get(0).getRoomDetail().getRoomType();
+                        roomTypeId = firstDetail.getId();
+                        roomTypeName = firstDetail.getName();
+                    }
+
+                    // Map list OrderDetail sang list RoomDetailSnapShotResponse
+                    List<HistoryOrderResponse.RoomDetailSnapShotResponse> roomDetails = orderDetailsInRoomType.stream()
+                            .map(detail -> {
+                                UUID detailId = detail.getRoomDetail() != null ? detail.getRoomDetail().getId() : null;
+                                String roomCode = detail.getRoomDetail() != null ? detail.getRoomDetail().getRoomCode() : "N/A";
+
+                                return new HistoryOrderResponse.RoomDetailSnapShotResponse(
+                                        detailId,
+                                        roomCode,
+                                        detail.getActualPrice()
+                                );
+                            })
+                            .toList();
+
+                    // Build RoomTypeSnapShotResponse
+                    return new HistoryOrderResponse.RoomTypeSnapShotResponse(
+                            roomTypeId,
+                            roomTypeName,
+                            roomDetails
+                    );
+                })
+                .toList();
+
+        return new HistoryOrderResponse(
+                order.getId(),
+                hotelResponse,
+                order.getNote(),
+                order.getCheckInDate(),
+                order.getCheckOutDate(),
+                order.getOrderStatus(),
+                order.getCreatedAt(),
+                roomTypeResponses
+        );
+    }
+
+    @Transactional
+    public List<OrderStatusCount> countOrders() {
+        UUID userId = SecurityUtil.currentUserId().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+        return orderRepository.countOrderStatusByUserId(userId);
     }
 }

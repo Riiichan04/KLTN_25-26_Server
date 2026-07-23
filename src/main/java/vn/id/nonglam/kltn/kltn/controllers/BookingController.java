@@ -8,6 +8,7 @@ import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.order.UpdateOrderStatusRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.order.UserOrderResponse;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
@@ -44,5 +45,10 @@ public class BookingController {
         }
         UpdateOrderResponse result = bookingService.updateOrderStatus(id, statusRequest.status());
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/get/user/{id}")
+    public ResponseEntity<List<UserOrderResponse>> getAllUserOrder(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.getOrderByUserId(id));
     }
 }

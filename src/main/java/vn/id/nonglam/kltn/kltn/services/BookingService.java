@@ -12,6 +12,7 @@ import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.order.UserOrderResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomType;
@@ -144,14 +145,26 @@ public class BookingService {
 
         try {
             validateOrderStatusUpdate(role, order.getOrderStatus(), newStatus);
-        }
-        catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return new UpdateOrderResponse(false, e.getMessage());
         }
 
         order.setOrderStatus(newStatus);
         orderRepository.save(order);
         return new UpdateOrderResponse(true, "Update success");
+    }
+
+    public List<UserOrderResponse> getOrderByUserId(UUID userId) {
+        return orderRepository.findByUser_Id(userId)
+                .stream()
+                .map(order ->
+                        new UserOrderResponse(
+                                order.getId(),
+                                order.getOrderStatus(),
+                                order.calculateTotalAmount()
+                        )
+                )
+                .toList();
     }
 
     private boolean verifyOwnership(User user, UserRole role, Order order) {

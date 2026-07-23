@@ -29,4 +29,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             @Param("endDate") LocalDateTime endDate,
             @Param("status") OrderStatus status
     );
+
+    List<Order> findByUser_Id(UUID user_id);
 }

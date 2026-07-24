@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import vn.id.nonglam.kltn.kltn.models.hotel.Comment;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -20,4 +22,8 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
         WHERE c.hotel.id = :hotelId AND c.isActive = true
     """)
     double avgRatingByHotelId(UUID hotelId);
+    List<Comment> findAllByIsActiveTrue();
+
+    Optional<Comment> findByIdAndIsActiveTrue(UUID uuid);
+    long countAllByIsActiveTrue();
 }

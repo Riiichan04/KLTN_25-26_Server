@@ -61,9 +61,9 @@ public class BookingController {
     public ResponseEntity<List<OrderStatusCount>> countOrders() {
         return ResponseEntity.ok(bookingService.countOrders());
     }
-
-    @GetMapping("/get/user/{id}")
-    public ResponseEntity<List<UserOrderResponse>> getAllUserOrder(@PathVariable UUID id) {
-        return ResponseEntity.ok(bookingService.getOrderByUserId(id));
-    }
+//
+//    @GetMapping("/get/user/{id}")
+//    public ResponseEntity<List<UserOrderResponse>> getAllUserOrder(@PathVariable UUID id) {
+//        return ResponseEntity.ok(bookingService.getOrderByUserId(id));
+//    }
 }

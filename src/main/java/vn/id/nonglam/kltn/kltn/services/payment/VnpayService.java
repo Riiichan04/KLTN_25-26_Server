@@ -96,4 +96,31 @@ public class VnpayService {
 
         return vnpayConfig.getPayUrl() + "?" + queryUrl;
     }
+
+    public int processVnpayReturn(HttpServletRequest request) {
+        Map<String, String> fields = new HashMap<>();
+        for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
+            String fieldName = params.nextElement();
+            String fieldValue = request.getParameter(fieldName);
+            if ((fieldName != null) && (!fieldName.isEmpty())) {
+                fields.put(fieldName, fieldValue);
+            }
+        }
+
+        String vnp_SecureHash = request.getParameter("vnp_SecureHash");
+        fields.remove("vnp_SecureHashType");
+        fields.remove("vnp_SecureHash");
+
+        String signValue = VnpayUtil.hashAllFields(fields, vnpayConfig.getHashSecret());
+
+        if (signValue.equals(vnp_SecureHash)) {
+            String responseCode = request.getParameter("vnp_ResponseCode");
+            if ("00".equals(responseCode)) {
+                return 1; // Hợp lệ & Thanh toán thành công
+            } else {
+                return 0; // Hợp lệ nhưng Thanh toán thất bại/hủy
+            }
+        }
+        return -1;
+    }
 }

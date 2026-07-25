@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestTemplate;
 import vn.id.nonglam.kltn.kltn.config.AiABSAProperties;
 import vn.id.nonglam.kltn.kltn.dto.request.ai.BatchPredictRequest;
@@ -26,6 +27,7 @@ public class AdminAISystemService {
     private final CommentRepository commentRepository;
     private final CommentReviewAspectRepository commentReviewAspectRepository;
     private final RestTemplate restTemplate;
+    private final TransactionTemplate transactionTemplate;
     private final AiABSAProperties properties;
     private static final int BATCH_SIZE = 50;
 
@@ -81,28 +83,28 @@ public class AdminAISystemService {
         return result;
     }
 
-    @Transactional
     public void saveResultsToDatabase(BatchPredictResponse response) {
-        for (PredictResponse p : response.batchResults()) {
+        transactionTemplate.executeWithoutResult(status -> {
+            for (PredictResponse p : response.batchResults()) {
+                if (p.results() != null && !p.results().isEmpty()) {
+                    commentReviewAspectRepository.deleteByComment_Id(p.id());
+                    Comment c = commentRepository.findByIdAndIsActiveTrue(p.id())
+                            .orElseThrow(() -> new NoSuchElementException("Không tìm thấy comment " + p.id()));
 
-            if (p.results() != null && !p.results().isEmpty()) {
-                commentReviewAspectRepository.deleteByComment_Id(p.id());
-                Comment c = commentRepository.findByIdAndIsActiveTrue(p.id())
-                        .orElseThrow(() -> new NoSuchElementException("Không tìm thấy comment " + p.id()));
+                    List<CommentReviewAspect> aspects = p.results().stream().map(v -> CommentReviewAspect.builder()
+                            .comment(c)
+                            .aspect(v.aspect())
+                            .entropy(v.entropy())
+                            .attention(v.attention())
+                            .sentiment(v.sentiment())
+                            .probability(v.probability())
+                            .opinionWord(v.opinionWord())
+                            .build()).toList();
 
-                List<CommentReviewAspect> aspects = p.results().stream().map(v -> CommentReviewAspect.builder()
-                        .comment(c)
-                        .aspect(v.aspect())
-                        .entropy(v.entropy())
-                        .attention(v.attention())
-                        .sentiment(v.sentiment())
-                        .probability(v.probability())
-                        .opinionWord(v.opinionWord())
-                        .build()).toList();
-
-                commentReviewAspectRepository.saveAll(aspects);
+                    commentReviewAspectRepository.saveAll(aspects);
+                }
             }
-        }
+        });
     }
 
     @Transactional

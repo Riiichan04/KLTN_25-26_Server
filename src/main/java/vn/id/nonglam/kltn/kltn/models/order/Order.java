@@ -78,4 +78,13 @@ public class Order {
                 .map(OrderDetail::getActualPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+    public BigDecimal calculateTotalPlatformFee() {
+        if (this.orderDetails == null || this.orderDetails.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return this.orderDetails.stream()
+                .map(OrderDetail::getPlatformFee)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

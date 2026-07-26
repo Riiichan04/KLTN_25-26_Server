@@ -10,13 +10,32 @@ import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderStatusCount;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
+    @Query("""
+        SELECT DISTINCT o
+        FROM Order o
+        JOIN FETCH o.orderDetails
+        JOIN FETCH o.hotel h
+        JOIN FETCH h.owner
+        WHERE o.createdAt >= :startDate
+                AND o.createdAt <= :endDate
+                AND o.orderStatus = :status
+    """)
+    List<Order> findAllCompletedOrdersInMonth(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("status") OrderStatus status
+    );
     Page<Order> findByUser_IdAndOrderStatus(UUID userId, OrderStatus status, Pageable pageable);
 
     @Query("SELECT o.orderStatus AS status, COUNT(o) AS count FROM Order o WHERE o.user.id = :userId GROUP BY o.orderStatus")
     List<OrderStatusCount> countOrderStatusByUserId(@Param("userId") UUID userId);
+
+    List<Order> findByUser_Id(UUID user_id);
 }

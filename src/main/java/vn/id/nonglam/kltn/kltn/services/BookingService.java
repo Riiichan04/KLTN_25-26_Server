@@ -15,6 +15,8 @@ import vn.id.nonglam.kltn.kltn.dto.request.order.OrderStatusCount;
 import vn.id.nonglam.kltn.kltn.dto.response.order.HistoryOrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.OrderResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.order.UpdateOrderResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.order.UserOrderResponse;
+import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomDetail;
 import vn.id.nonglam.kltn.kltn.models.hotel.RoomType;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
@@ -27,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -74,14 +77,18 @@ public class BookingService {
         if (orderRequest.checkin().isAfter(orderRequest.checkout()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Checkin date must before checkout date!");
 
+        if (orderRequest.roomDetailsId() == null || orderRequest.roomDetailsId().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You must choose at least 1 room!");
+        }
+
         List<RoomDetail> roomDetails = orderRequest.roomDetailsId().stream().map(id -> {
             boolean isValid = orderDetailRepository.checkValidRoomDetail(id, orderRequest.checkin(), orderRequest.checkout());
-            boolean isExits = roomDetailRepository.existsByIdAndActiveTrue(id);
+            boolean isExits = roomDetailRepository.existsByIdAndIsActiveTrue(id);
 
             if (!isValid || !isExits) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your chosen room is not valid!");
             }
-            return roomDetailRepository.findByIdAndActiveTrue(id);
+            return roomDetailRepository.findByIdAndIsActiveTrue(id);
         }).toList();
 
         User user = userRepository.getReferenceById(userId);
@@ -89,12 +96,23 @@ public class BookingService {
         order.setUser(user);
         order.setOrderStatus(OrderStatus.PENDING);
         order.setNote(orderRequest.note());
-//        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setCheckInDate(orderRequest.checkin());
         order.setCheckOutDate(orderRequest.checkout());
-        order.setTotalCapacity(order.getTotalCapacity());
+        order.setTotalCapacity(orderRequest.totalCapacity());
+
+        Set<Hotel> listHotel = roomDetails.stream().map(
+                roomDetail -> roomDetail.getRoomType().getHotel()
+        ).collect(Collectors.toSet());
+
+        if (listHotel.size() > 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can book only 1 hotel each booking");
+        }
+        order.setHotel(listHotel.iterator().next());
+
         order = orderRepository.save(order);
 
+        User owner = order.getHotel().getOwner();
+        double platformFeePercent = PlatformFee.getPlatformFee(owner.getUserType());
         BigDecimal totalPrice = BigDecimal.valueOf(0);
         for (RoomDetail roomDetail : roomDetails) {
             OrderDetail orderDetail = new OrderDetail();
@@ -107,7 +125,6 @@ public class BookingService {
             orderDetail.setActualPrice(actualPrice);
 
             //Platform price
-            double platformFeePercent = PlatformFee.getPlatformFee(user.getUserType());
             BigDecimal platformFee = actualPrice.multiply(BigDecimal.valueOf(platformFeePercent));
             orderDetail.setPlatformFee(platformFee);
 
@@ -131,14 +148,26 @@ public class BookingService {
 
         try {
             validateOrderStatusUpdate(role, order.getOrderStatus(), newStatus);
-        }
-        catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return new UpdateOrderResponse(false, e.getMessage());
         }
 
         order.setOrderStatus(newStatus);
         orderRepository.save(order);
         return new UpdateOrderResponse(true, "Update success");
+    }
+
+    public List<UserOrderResponse> getOrderByUserId(UUID userId) {
+        return orderRepository.findByUser_Id(userId)
+                .stream()
+                .map(order ->
+                        new UserOrderResponse(
+                                order.getId(),
+                                order.getOrderStatus(),
+                                order.calculateTotalAmount()
+                        )
+                )
+                .toList();
     }
 
     private boolean verifyOwnership(User user, UserRole role, Order order) {

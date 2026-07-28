@@ -27,8 +27,8 @@ public class CommentController {
     }
 
     @GetMapping("/get/hotel/{id}")
-    public ResponseEntity<Page<CommentResponse>> getCommentsByHotel(@PathVariable UUID id, int offset, int limit) {
-        Pageable pageable = PageRequest.of(offset, limit);
+    public ResponseEntity<Page<CommentResponse>> getCommentsByHotel(@PathVariable UUID id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(commentService.getCommentsByHotel(id, pageable));
     }
 

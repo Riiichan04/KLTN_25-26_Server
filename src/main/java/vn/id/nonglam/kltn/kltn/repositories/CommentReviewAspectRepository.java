@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import vn.id.nonglam.kltn.kltn.dto.response.comments.SentimentResponse;
 import vn.id.nonglam.kltn.kltn.models.ai.CommentReviewAspect;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface CommentReviewAspectRepository extends JpaRepository<CommentRevi
 
     @EntityGraph(attributePaths = {"comment"})
     List<CommentReviewAspect> findTop10ByComment_IsActiveTrueOrderByCreatedAtDesc();
+
+    List<CommentReviewAspect> findByComment_Id(UUID commentId);
 }

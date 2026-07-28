@@ -1,5 +1,6 @@
 package vn.id.nonglam.kltn.kltn.services;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,14 +18,17 @@ import vn.id.nonglam.kltn.kltn.dto.request.comments.SentimentRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.comments.UpdateCommentRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.comments.CommentResponse;
 import vn.id.nonglam.kltn.kltn.dto.request.comments.InsertCommentRequest;
+import vn.id.nonglam.kltn.kltn.dto.response.comments.SentimentAspect;
 import vn.id.nonglam.kltn.kltn.dto.response.comments.SentimentResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.common.ServiceResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Comment;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
 import vn.id.nonglam.kltn.kltn.repositories.CommentRepository;
+import vn.id.nonglam.kltn.kltn.repositories.CommentReviewAspectRepository;
 import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
 import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -34,17 +38,21 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final HotelRepository hotelRepository;
+    private final CommentReviewAspectRepository commentReviewAspectRepository;
     private final RestClient restClient;
+    private final ModelAIService modelAIService;
 
     @Value("${app.model-server-url}")
     private String modelServerUrl;
     private final static String PATH_URL = "/comments/sentiment/";
 
     @Autowired
-    public CommentService(CommentRepository commentRepository, UserRepository userRepository, HotelRepository hotelRepository) {
+    public CommentService(CommentRepository commentRepository, UserRepository userRepository, HotelRepository hotelRepository, CommentReviewAspectRepository commentReviewAspectRepository,  ModelAIService modelAIService) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.hotelRepository = hotelRepository;
+        this.commentReviewAspectRepository = commentReviewAspectRepository;
+        this.modelAIService = modelAIService;
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
         factory.setReadTimeout(5000);
@@ -74,6 +82,7 @@ public class CommentService {
             SentimentResponse sentimentResponse = this.getCommentSentiment(input.content());
             comment.setSentiment(sentimentResponse.sentiment());
             commentRepository.save(comment);
+
             return new ServiceResponse(true, "Upload comment success");
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -122,11 +131,20 @@ public class CommentService {
     }
 
     private CommentResponse mapToCommentResponse(Comment comment) {
+        List<SentimentAspect> listSentiments = commentReviewAspectRepository
+                .findByComment_Id(comment.getId())
+                .stream().map(aspect -> new SentimentAspect(
+                        aspect.getAspect(),
+                        aspect.getSentiment(),
+                        aspect.getOpinionWord()
+                )).toList();
+
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
                 comment.getRating(),
                 UserUtil.convertUserToUserDTO(comment.getUser()),
+                listSentiments,
                 comment.getUpdatedAt()
         );
     }

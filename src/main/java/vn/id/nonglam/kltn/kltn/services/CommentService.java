@@ -40,19 +40,17 @@ public class CommentService {
     private final HotelRepository hotelRepository;
     private final CommentReviewAspectRepository commentReviewAspectRepository;
     private final RestClient restClient;
-    private final ModelAIService modelAIService;
 
     @Value("${app.model-server-url}")
     private String modelServerUrl;
     private final static String PATH_URL = "/comments/sentiment/";
 
     @Autowired
-    public CommentService(CommentRepository commentRepository, UserRepository userRepository, HotelRepository hotelRepository, CommentReviewAspectRepository commentReviewAspectRepository,  ModelAIService modelAIService) {
+    public CommentService(CommentRepository commentRepository, UserRepository userRepository, HotelRepository hotelRepository, CommentReviewAspectRepository commentReviewAspectRepository) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.hotelRepository = hotelRepository;
         this.commentReviewAspectRepository = commentReviewAspectRepository;
-        this.modelAIService = modelAIService;
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
         factory.setReadTimeout(5000);

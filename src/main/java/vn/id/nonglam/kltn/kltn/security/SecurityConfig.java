@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/home/**").permitAll()
                         .requestMatchers("/hotel/**").permitAll() //TODO: Create, update, delete must filter by role later
+                        .requestMatchers("/comment/get/hotel/**").permitAll()
                         .requestMatchers("/search/**").permitAll()
                         .requestMatchers("/api/payment/vnpay-return", "/api/payment/vnpay-ipn").permitAll()
                         .requestMatchers("/booking/choose-room").permitAll()

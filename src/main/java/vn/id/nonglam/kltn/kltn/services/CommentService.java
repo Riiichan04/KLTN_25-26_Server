@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import vn.id.nonglam.kltn.kltn.common.enums.CommentSentiment;
+import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.common.utils.UserUtil;
 import vn.id.nonglam.kltn.kltn.dto.request.comments.SentimentRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.comments.UpdateCommentRequest;
@@ -23,10 +24,9 @@ import vn.id.nonglam.kltn.kltn.dto.response.comments.SentimentResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.common.ServiceResponse;
 import vn.id.nonglam.kltn.kltn.models.hotel.Comment;
 import vn.id.nonglam.kltn.kltn.models.hotel.Hotel;
-import vn.id.nonglam.kltn.kltn.repositories.CommentRepository;
-import vn.id.nonglam.kltn.kltn.repositories.CommentReviewAspectRepository;
-import vn.id.nonglam.kltn.kltn.repositories.HotelRepository;
-import vn.id.nonglam.kltn.kltn.repositories.UserRepository;
+import vn.id.nonglam.kltn.kltn.models.user.User;
+import vn.id.nonglam.kltn.kltn.repositories.*;
+import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,13 +40,14 @@ public class CommentService {
     private final HotelRepository hotelRepository;
     private final CommentReviewAspectRepository commentReviewAspectRepository;
     private final RestClient restClient;
+    private final OrderRepository orderRepository;
 
     @Value("${app.model-server-url}")
     private String modelServerUrl;
     private final static String PATH_URL = "/comments/sentiment/";
 
     @Autowired
-    public CommentService(CommentRepository commentRepository, UserRepository userRepository, HotelRepository hotelRepository, CommentReviewAspectRepository commentReviewAspectRepository) {
+    public CommentService(CommentRepository commentRepository, UserRepository userRepository, HotelRepository hotelRepository, CommentReviewAspectRepository commentReviewAspectRepository, OrderRepository orderRepository) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.hotelRepository = hotelRepository;
@@ -57,6 +58,7 @@ public class CommentService {
         this.restClient = RestClient.builder()
                 .requestFactory(factory)
                 .build();
+        this.orderRepository = orderRepository;
     }
 
     public Page<CommentResponse> getCommentsByHotel(UUID hotelId, Pageable pageable) {
@@ -67,11 +69,27 @@ public class CommentService {
     @Transactional
     public ServiceResponse insertComments(InsertCommentRequest input) {
         try {
-            Comment comment = new Comment();
+            UUID userId = SecurityUtil.currentUserId().orElse(null);
+            if (userId == null) return new ServiceResponse(false, "User not found");
+
             Hotel hotel = hotelRepository.getHotelById(input.hotelId());
             if (hotel == null) {
                 return new ServiceResponse(false, "Hotel not found");
             }
+
+            if (orderRepository
+                    .findByUser_IdAndHotel_Id(userId, input.hotelId())
+                    .stream()
+                    .filter(order -> order
+                            .getOrderStatus()
+                            .equals(OrderStatus.COMPLETED)
+                    ).findFirst()
+                    .orElse(null) == null
+            ) {
+                return new ServiceResponse(false, "You have not complete any booking in this hotel");
+            }
+
+            Comment comment = new Comment();
             comment.setHotel(hotel);
             comment.setUser(userRepository.findUserById(input.userId()));
             comment.setContent(input.content());

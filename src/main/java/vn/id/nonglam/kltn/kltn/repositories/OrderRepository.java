@@ -38,4 +38,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<OrderStatusCount> countOrderStatusByUserId(@Param("userId") UUID userId);
 
     List<Order> findByUser_Id(UUID user_id);
+
+    List<Order> findByUser_IdAndHotel_Id(UUID user_id, UUID hotel_id);
 }

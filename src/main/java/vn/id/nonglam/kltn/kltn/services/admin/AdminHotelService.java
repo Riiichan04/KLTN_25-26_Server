@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.id.nonglam.kltn.kltn.dto.request.admin.*;
+import vn.id.nonglam.kltn.kltn.dto.request.comments.AdminCommentResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.AdminHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveRoomTypeResponse;
@@ -25,6 +26,8 @@ public class AdminHotelService {
     private final HotelUtilityRepository hotelUtilityRepository;
     private final RoomUtilityRepository roomUtilityRepository;
     private final RoomTypeRepository roomTypeRepository;
+    private final CommentRepository commentRepository;
+    private final CommentReviewAspectRepository commentReviewAspectRepository;
 
     public Page<GetAdminSnapshotHotelResponse> getHotels(String keyword, Pageable pageable) {
         return hotelRepository.getHotels(keyword, pageable);
@@ -301,4 +304,43 @@ public class AdminHotelService {
         hotel = hotelRepository.save(hotel);
         return  hotel.getId() != null;
     }
+
+    @Transactional(readOnly = true)
+    public Page<AdminCommentResponse> getCommentsByHotelId(UUID hotelId, Pageable pageable) {
+        Page<AdminCommentResponse> result = commentRepository.findByHotel_Id(hotelId, pageable).map(c -> {
+            List<AdminCommentResponse.SentimentAspectResponse> aspects = commentReviewAspectRepository.findByComment_Id(c.getId()).stream().map(s ->
+                    AdminCommentResponse.SentimentAspectResponse.builder()
+                            .id(s.getId())
+                            .aspect(s.getAspect())
+                            .sentiment(s.getSentiment())
+                            .opinionWord(s.getOpinionWord())
+                            .createdAt(s.getCreatedAt())
+                            .updatedAt(s.getUpdatedAt())
+                            .build()).collect(Collectors.toList());
+
+            return AdminCommentResponse.builder()
+                    .id(c.getId())
+                    .email(c.getUser().getEmail())
+                    .avatarUrl(c.getUser().getAvatarUrl())
+                    .username(c.getUser().getUsername())
+                    .rating(c.getRating())
+                    .content(c.getContent())
+                    .sentimentAspects(aspects)
+                    .isActive(c.isActive())
+                    .createdAt(c.getCreatedAt())
+                    .updatedAt(c.getUpdatedAt())
+                    .build();
+        });
+        return result;
+    }
+
+    @Transactional
+    public Boolean changeActiveComment(UUID id, boolean active) {
+        Comment c = commentRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Comment not found"));
+        c.setActive(active);
+
+        commentRepository.save(c);
+        return true;
+    }
+
 }

@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.id.nonglam.kltn.kltn.dto.request.admin.*;
+import vn.id.nonglam.kltn.kltn.dto.request.comments.AdminCommentResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.AdminHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveRoomTypeResponse;
@@ -17,8 +17,6 @@ import vn.id.nonglam.kltn.kltn.services.admin.AdminHotelService;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController
@@ -81,5 +79,19 @@ public class HotelManagementController {
     @PatchMapping("/active-room-type")
     public ResponseEntity<ChangeActiveRoomTypeResponse> changeActiveRoomType(@RequestBody ChangeActiveRoomTypeRequest request) {
         return ResponseEntity.ok(adminHotelService.changeActiveRoomType(request));
+    }
+
+    @GetMapping("/comments/{id}")
+    public ResponseEntity<Page<AdminCommentResponse>> getCommentsByHotelId(@PathVariable UUID id, @PageableDefault(
+            size = 10,
+            sort = "createdAt",
+            direction = Sort.Direction.DESC
+    ) Pageable pageable) {
+        return ResponseEntity.ok(adminHotelService.getCommentsByHotelId(id, pageable));
+    }
+
+    @PatchMapping("/comments/active/{id}")
+    public ResponseEntity<Boolean> changeActiveComment(@PathVariable UUID id, @RequestBody Boolean active) {
+        return ResponseEntity.ok(adminHotelService.changeActiveComment(id, active));
     }
 }

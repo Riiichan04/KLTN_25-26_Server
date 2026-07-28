@@ -22,4 +22,6 @@ public interface CommentReviewAspectRepository extends JpaRepository<CommentRevi
 
     @EntityGraph(attributePaths = {"comment"})
     List<CommentReviewAspect> findTop10ByComment_IsActiveTrueOrderByCreatedAtDesc();
+
+    List<CommentReviewAspect> findByComment_Id(UUID commentId);
 }

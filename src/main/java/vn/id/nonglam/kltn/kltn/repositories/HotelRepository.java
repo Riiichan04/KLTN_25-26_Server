@@ -134,4 +134,6 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     List<Hotel> findTop5ByIsActiveTrueOrderByCreatedAtDesc();
 
     List<Hotel> findByIsActiveTrue();
+
+    long countByIsActiveTrue();
 }

@@ -70,6 +70,11 @@ public class Order {
         updatedAt = LocalDateTime.now();
     }
 
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
     public BigDecimal calculateTotalAmount() {
         if (this.orderDetails == null || this.orderDetails.isEmpty()) {
             return BigDecimal.ZERO;

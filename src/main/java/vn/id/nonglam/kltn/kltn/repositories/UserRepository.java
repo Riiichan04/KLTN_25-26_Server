@@ -27,4 +27,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
         or u.email ILIKE concat('%', :keyword, '%') 
     """)
     Page<User> findAll(@Param("keyword") String keyword, Pageable pageable);
+
+    long countByIsActiveTrue();
 }

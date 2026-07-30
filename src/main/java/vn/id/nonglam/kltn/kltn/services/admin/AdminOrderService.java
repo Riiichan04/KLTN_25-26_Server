@@ -110,9 +110,12 @@ public class AdminOrderService {
 
     @Transactional
     public Boolean changeStatus(UUID id, ChangeOrderStatusRequest req) {
-        Order order = orderRepository.findById(id).orElseThrow(() -> new NoSuchElementException("No order found with id: " + id));
-        order.setOrderStatus(req.orderStatus());
-        orderRepository.save(order);
+        int updatedRows = orderRepository.updateStatusOnly(id, req.orderStatus(), LocalDateTime.now());
+
+        if (updatedRows == 0) {
+            throw new NoSuchElementException("No order found with id: " + id);
+        }
+
         return true;
     }
 }

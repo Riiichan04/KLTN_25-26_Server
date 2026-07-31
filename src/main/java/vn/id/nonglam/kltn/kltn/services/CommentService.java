@@ -36,11 +36,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final HotelRepository hotelRepository;
     private final CommentReviewAspectRepository commentReviewAspectRepository;
-    private final RestClient restClient;
     private final OrderRepository orderRepository;
-
-    @Value("${app.model-server-url}")
-    private String modelServerUrl;
     private final ModelAIService modelAIService;
 
 
@@ -51,12 +47,6 @@ public class CommentService {
         this.hotelRepository = hotelRepository;
         this.commentReviewAspectRepository = commentReviewAspectRepository;
         this.modelAIService = modelAIService;
-
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setReadTimeout(5000);
-        this.restClient = RestClient.builder()
-                .requestFactory(factory)
-                .build();
         this.orderRepository = orderRepository;
     }
 
@@ -146,6 +136,7 @@ public class CommentService {
     }
 
     private CommentResponse mapToCommentResponse(Comment comment) {
+        System.out.println(comment.getContent());
         List<SentimentAspect> listSentiments = commentReviewAspectRepository
                 .findByComment_Id(comment.getId())
                 .stream().map(aspect -> new SentimentAspect(
@@ -153,7 +144,6 @@ public class CommentService {
                         aspect.getSentiment(),
                         aspect.getOpinionWord()
                 )).toList();
-
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),

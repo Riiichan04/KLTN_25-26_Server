@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.id.nonglam.kltn.kltn.dto.request.admin.*;
@@ -17,8 +16,6 @@ import vn.id.nonglam.kltn.kltn.services.admin.AdminHotelService;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController

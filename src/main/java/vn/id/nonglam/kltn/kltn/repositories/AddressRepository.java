@@ -20,6 +20,7 @@ public interface AddressRepository extends JpaRepository<Address, UUID> {
                     MAX(h.thumbnail)
                 )
                 from Address a join Hotel h on a.id = h.address.id
+                where a.isActive = true
                 group by a.province, a.postalCode
                 order by count(a.province) DESC
             """)

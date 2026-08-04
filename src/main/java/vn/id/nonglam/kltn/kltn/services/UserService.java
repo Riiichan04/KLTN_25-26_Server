@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import vn.id.nonglam.kltn.kltn.dto.request.auth.RegisterRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.UpdateRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.auth.AuthDto;
 import vn.id.nonglam.kltn.kltn.models.user.User;

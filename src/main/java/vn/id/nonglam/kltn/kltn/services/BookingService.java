@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import vn.id.nonglam.kltn.kltn.common.constants.PlatformFee;
+import vn.id.nonglam.kltn.kltn.common.constants.RedirectUrl;
 import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
 import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.order.OrderRequest;
@@ -41,6 +42,8 @@ public class BookingService {
     private final RoomTypeRepository roomTypeRepository;
     private final RoomDetailRepository roomDetailRepository;
     private final UserRepository userRepository;
+    private final MailService mailService;
+    private final RedirectUrl redirectUrl;
 
     public List<OrderResponse.RoomDetailValidResponse> getRoomDetailsValid(UUID hotelId, LocalDateTime startDate, LocalDateTime endDate) {
         List<RoomType> roomTypes = roomTypeRepository.findByHotel_IdAndIsActiveTrue(hotelId);
@@ -130,6 +133,19 @@ public class BookingService {
 
             orderDetailRepository.save(orderDetail);
         }
+
+        mailService.sendNewBookingNoticeEmail(
+                owner.getEmail(), // Email của chủ khách sạn
+                owner.getDisplayName() == null ? owner.getUsername() : owner.getDisplayName(), // Tên chủ khách sạn
+                user.getDisplayName() == null ? user.getUsername() : user.getDisplayName(), // Tên người đặt phòng
+                order.getId().toString(),
+                order.getCheckInDate(),
+                order.getCheckOutDate(),
+                totalPrice,
+                redirectUrl.clientUrl + "/owner/orders/" + order.getId()
+        );
+
+
         return new OrderResponse(true, order.getId(), totalPrice);
     }
 
@@ -154,6 +170,23 @@ public class BookingService {
 
         order.setOrderStatus(newStatus);
         orderRepository.save(order);
+
+        if (newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.REJECTED) {
+            String statusText = (newStatus == OrderStatus.CONFIRMED) ? "ĐÃ PHÊ DUYỆT" : "TỪ CHỐI";
+            String statusColor = (newStatus == OrderStatus.CONFIRMED) ? "#16a34a" : "#dc2626";
+
+            mailService.sendBookingStatusEmail(
+                    order.getUser().getEmail(),
+                    order.getUser().getUsername(),
+                    order.getHotel().getName(),
+                    order.getId().toString(),
+                    statusText,
+                    statusColor,
+                    order.getNote(),
+                    redirectUrl.clientUrl + "/user/orders/" + order.getId()
+            );
+        }
+
         return new UpdateOrderResponse(true, "Update success");
     }
 
@@ -168,6 +201,24 @@ public class BookingService {
                         )
                 )
                 .toList();
+    }
+
+    @Transactional
+    public void cancelExpiredPaymentOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+
+        mailService.sendPaymentExpiredEmail(
+                order.getUser().getEmail(),
+                order.getUser().getUsername(),
+                order.getHotel().getName(),
+                order.getId().toString(),
+                order.calculateTotalAmount(),
+                redirectUrl.clientUrl + "/hotels/" + order.getHotel().getId()
+        );
     }
 
     private boolean verifyOwnership(User user, UserRole role, Order order) {

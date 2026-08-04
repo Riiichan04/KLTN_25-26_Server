@@ -105,4 +105,74 @@ public class MailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+
+    @Async
+    public void sendNewBookingNoticeEmail(String to, String ownerName, String customerName, String orderId,
+                                          java.time.LocalDateTime checkInDate, java.time.LocalDateTime checkOutDate,
+                                          BigDecimal totalAmount, String manageOrderUrl) {
+        try {
+            Context context = new Context();
+            context.setVariable("ownerName", ownerName);
+            context.setVariable("customerName", customerName);
+            context.setVariable("orderId", orderId);
+
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            context.setVariable("checkInDate", checkInDate.format(formatter));
+            context.setVariable("checkOutDate", checkOutDate.format(formatter));
+
+            java.text.NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            context.setVariable("totalAmount", format.format(totalAmount));
+
+            context.setVariable("manageOrderUrl", manageOrderUrl);
+
+            String htmlContent = templateEngine.process("email/new-booking-notice", context);
+            sendHtmlMail(to, "HomeBook - Bạn có đơn đặt phòng mới", htmlContent);
+            log.info("New booking notice sent to owner: {}", to);
+        } catch (Exception e) {
+            log.error("CRITICAL: Could not send new booking notice to {}. Error: {}", to, e.getMessage());
+        }
+    }
+
+    @Async
+    public void sendBookingStatusEmail(String to, String customerName, String hotelName, String orderId,
+                                       String statusText, String statusColor, String note, String orderDetailUrl) {
+        try {
+            Context context = new Context();
+            context.setVariable("customerName", customerName);
+            context.setVariable("hotelName", hotelName);
+            context.setVariable("orderId", orderId);
+            context.setVariable("statusText", statusText);
+            context.setVariable("statusColor", statusColor);
+            context.setVariable("note", note);
+            context.setVariable("orderDetailUrl", orderDetailUrl);
+
+            String htmlContent = templateEngine.process("email/booking-status", context);
+            sendHtmlMail(to, "HomeBook - Cập nhật trạng thái đơn đặt phòng #" + orderId, htmlContent);
+            log.info("Booking status update sent to customer: {}", to);
+        } catch (Exception e) {
+            log.error("CRITICAL: Could not send booking status to {}. Error: {}", to, e.getMessage());
+        }
+    }
+
+    @Async
+    public void sendPaymentExpiredEmail(String to, String customerName, String hotelName, String orderId,
+                                        BigDecimal amount, String rebookUrl) {
+        try {
+            Context context = new Context();
+            context.setVariable("customerName", customerName);
+            context.setVariable("hotelName", hotelName);
+            context.setVariable("orderId", orderId);
+
+            java.text.NumberFormat format = java.text.NumberFormat.getInstance(new Locale("vi", "VN"));
+            context.setVariable("amount", format.format(amount));
+
+            context.setVariable("rebookUrl", rebookUrl);
+
+            String htmlContent = templateEngine.process("email/payment-expired", context);
+            sendHtmlMail(to, "HomeBook - Đơn đặt phòng của bạn đã bị hủy do quá hạn thanh toán", htmlContent);
+            log.info("Payment expired email sent to customer: {}", to);
+        } catch (Exception e) {
+            log.error("CRITICAL: Could not send payment expired email to {}. Error: {}", to, e.getMessage());
+        }
+    }
 }

@@ -57,4 +57,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Modifying
     @Query("UPDATE Order o SET o.orderStatus = :status, o.updatedAt = :updatedAt WHERE o.id = :id")
     int updateStatusOnly(@Param("id") UUID id, @Param("status") OrderStatus status, @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Query("SELECT o FROM Order o WHERE " +
+            "(o.orderStatus = vn.id.nonglam.kltn.kltn.common.enums.OrderStatus.CONFIRMED AND o.checkInDate <= :deadlineForConfirmed) " +
+            "OR (o.orderStatus = vn.id.nonglam.kltn.kltn.common.enums.OrderStatus.PENDING AND o.checkInDate <= :deadlineForPending)")
+    List<Order> findOrdersToAutoCancel(@Param("deadlineForConfirmed") LocalDateTime deadlineForConfirmed,
+                                       @Param("deadlineForPending") LocalDateTime deadlineForPending);
 }

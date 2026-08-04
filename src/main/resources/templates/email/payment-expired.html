@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeBook - Đơn Đặt Phòng Đã Bị Hủy</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f0f9ff; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0f9ff; padding: 40px 0;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        <tr>
+          <td style="background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px; text-transform: uppercase;">
+              HOME<span style="font-weight: 300; opacity: 0.9;">BOOK</span>
+            </h1>
+            <p style="color: #e0f2fe; margin: 10px 0 0 0; font-size: 14px; font-weight: 400;">Thông báo quan trọng về đơn hàng</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 40px 50px; color: #334155; line-height: 1.6;">
+            <h2 style="color: #0f172a; font-size: 24px; margin-top: 0; font-weight: 700;">Hủy Đơn Do Quá Hạn Thanh Toán</h2>
+            <p style="margin-bottom: 20px;">Chào <strong th:text="${customerName}">Tên Khách Hàng</strong>,</p>
+            <p style="margin-bottom: 25px;">Rất tiếc, hệ thống HomeBook thông báo đơn đặt phòng của bạn tại <strong th:text="${hotelName}">Tên Khách Sạn</strong> đã <span style="color: #ef4444; font-weight: 600;">bị hủy tự động</span> do quá thời gian quy định mà chưa nhận được thanh toán.</p>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #fff1f2; border-radius: 12px; border: 2px solid #fecdd3; margin: 30px 0;">
+              <tr>
+                <td style="padding: 20px 30px;">
+                  <p style="margin: 0 0 10px 0; font-size: 14px; color: #9f1239;">Mã đơn hàng bị hủy: <strong th:text="${orderId}">#ORD-12345</strong></p>
+                  <p style="margin: 0 0 10px 0; font-size: 14px; color: #9f1239;">Số tiền chưa thanh toán:</p>
+                  <div style="font-size: 32px; font-weight: 800; color: #e11d48; margin: 0;">
+                    <span th:text="${amount}">0</span> <span style="font-size: 20px;">VND</span>
+                  </div>
+                  <hr style="border: 0; border-top: 1px dashed #fda4af; margin: 15px 0;">
+                  <p style="margin: 0; font-size: 15px; color: #9f1239;">
+                    Trạng thái: <span style="font-weight: 600;">ĐÃ HỦY (CANCELLED)</span>
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin-bottom: 30px; font-size: 15px;">Phòng của bạn hiện đã được mở lại cho các khách hàng khác. Bạn có thể tiến hành đặt lại phòng mới nếu vẫn có nhu cầu lưu trú.</p>
+
+            <div style="text-align: center; margin-bottom: 30px;">
+              <a th:href="${rebookUrl}" style="background-color: #0ea5e9; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block;">
+                Tìm & Đặt Phòng Khác
+              </a>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #f1f5f9; margin-bottom: 30px;">
+            <p style="margin-bottom: 0; font-size: 15px;">Nếu bạn gặp vấn đề trong quá trình thanh toán, xin vui lòng liên hệ đội ngũ hỗ trợ.<br><br>Trân trọng,<br><strong>HomeBook Team</strong></p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 30px; text-align: center; font-size: 12px; color: #94a3b8; background-color: #f8fafc;">
+            <p style="margin: 0; font-weight: 600;">&copy; 2026 HomeBook. All rights reserved.</p>
+            <div style="margin-top: 15px;">
+              <a href="#" style="color: #0ea5e9; text-decoration: none; margin: 0 10px;">Support Center</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

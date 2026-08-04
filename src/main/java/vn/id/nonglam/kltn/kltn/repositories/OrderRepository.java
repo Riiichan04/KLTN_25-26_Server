@@ -42,6 +42,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByUser_Id(UUID user_id);
 
+    List<Order> findByUser_IdAndHotel_Id(UUID user_id, UUID hotel_id);
+
     @Query("""
         select o from Order o left join o.hotel h
         where (h is null or h.name ilike concat('%', :keyword, '%'))

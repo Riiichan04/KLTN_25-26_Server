@@ -2,6 +2,7 @@ package vn.id.nonglam.kltn.kltn.repositories;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,10 @@ import java.util.UUID;
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
     Page<Comment> findByHotelId(UUID hotelId, Pageable pageable);
     Page<Comment> findByUserId(UUID userId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user"})
+    Page<Comment> findByHotel_Id(UUID hotelId, Pageable pageable);
+
     Comment findCommentById(UUID id);
     int countByHotelIdAndIsActiveTrue(UUID hotelId);
     @Query("""

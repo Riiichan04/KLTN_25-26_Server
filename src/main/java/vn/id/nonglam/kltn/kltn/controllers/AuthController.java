@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.LoginRequest;
+import vn.id.nonglam.kltn.kltn.dto.request.auth.RegisterOwnerRequest;
 import vn.id.nonglam.kltn.kltn.dto.request.auth.RegisterRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.auth.AuthResponse;
 import vn.id.nonglam.kltn.kltn.services.AuthService;
@@ -20,6 +21,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
         AuthResponse response = this.authService.login(loginRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/register-owner")
+    public ResponseEntity<AuthResponse> registerOwner(@RequestBody RegisterOwnerRequest registerOwnerRequest) {
+        AuthResponse response = this.authService.registerOwner(registerOwnerRequest);
         return ResponseEntity.ok(response);
     }
 

@@ -3,14 +3,20 @@ package vn.id.nonglam.kltn.kltn.services.admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import vn.id.nonglam.kltn.kltn.common.enums.OrderStatus;
+import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.admin.ChangeOrderStatusRequest;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.AdminOrderResponse;
+import vn.id.nonglam.kltn.kltn.models.auth.UserPrinciple;
 import vn.id.nonglam.kltn.kltn.models.order.Order;
 import vn.id.nonglam.kltn.kltn.models.order.OrderDetail;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.OrderRepository;
+import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -21,9 +27,18 @@ import java.util.stream.Collectors;
 public class AdminOrderService {
     private final OrderRepository orderRepository;
 
-    public Page<AdminOrderResponse> getOrders(String keyword, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        return orderRepository.findAll(keyword, startDate, endDate, pageable)
-                .map(this::mapperToAdminOrderResponse);
+    public Page<AdminOrderResponse> getOrders(String keyword, OrderStatus status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+
+        if(user.role().equals(UserRole.ADMIN)) {
+            return orderRepository.findAll(keyword, startDate, endDate, pageable)
+                    .map(this::mapperToAdminOrderResponse);
+        } else if(user.role().equals(UserRole.OWNER)) {
+            return orderRepository.findAllOwnerOrder(keyword, user.id(), status, startDate, endDate, pageable)
+                    .map(this::mapperToAdminOrderResponse);
+        }
+        return null;
     }
 
     private AdminOrderResponse mapperToAdminOrderResponse(Order o) {
@@ -110,6 +125,7 @@ public class AdminOrderService {
 
     @Transactional
     public Boolean changeStatus(UUID id, ChangeOrderStatusRequest req) {
+
         int updatedRows = orderRepository.updateStatusOnly(id, req.orderStatus(), LocalDateTime.now());
 
         if (updatedRows == 0) {

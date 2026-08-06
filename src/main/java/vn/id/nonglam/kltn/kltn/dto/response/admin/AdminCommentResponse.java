@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.dto.request.comments;
+package vn.id.nonglam.kltn.kltn.dto.response.admin;
 
 import lombok.Builder;
 

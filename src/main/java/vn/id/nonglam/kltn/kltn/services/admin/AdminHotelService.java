@@ -3,17 +3,22 @@ package vn.id.nonglam.kltn.kltn.services.admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import vn.id.nonglam.kltn.kltn.common.enums.UserRole;
 import vn.id.nonglam.kltn.kltn.dto.request.admin.*;
-import vn.id.nonglam.kltn.kltn.dto.request.comments.AdminCommentResponse;
+import vn.id.nonglam.kltn.kltn.dto.response.admin.AdminCommentResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.AdminHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveHotelResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.ChangeActiveRoomTypeResponse;
 import vn.id.nonglam.kltn.kltn.dto.response.admin.GetAdminSnapshotHotelResponse;
+import vn.id.nonglam.kltn.kltn.models.auth.UserPrinciple;
 import vn.id.nonglam.kltn.kltn.models.hotel.*;
 import vn.id.nonglam.kltn.kltn.models.user.User;
 import vn.id.nonglam.kltn.kltn.repositories.*;
+import vn.id.nonglam.kltn.kltn.security.SecurityUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,13 +35,29 @@ public class AdminHotelService {
     private final CommentReviewAspectRepository commentReviewAspectRepository;
 
     public Page<GetAdminSnapshotHotelResponse> getHotels(String keyword, Pageable pageable) {
-        return hotelRepository.getHotels(keyword, pageable);
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+        if(user.role().equals(UserRole.ADMIN)) {
+            return hotelRepository.getHotels(keyword, pageable);
+        } else if(user.role().equals(UserRole.OWNER)) {
+            return hotelRepository.getHotelsByOwnerId(keyword, user.id(), pageable);
+        }
+        return null;
     }
 
     public AdminHotelResponse getHotelById(UUID id) {
-        return hotelRepository.findById(id)
-                .map(this::mapperHotelToGetHotelResponse)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khách sạn với ID: " + id));
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+        if(user.role().equals(UserRole.ADMIN)) {
+            return hotelRepository.findById(id)
+                    .map(this::mapperHotelToGetHotelResponse)
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khách sạn với ID: " + id));
+        } else if(user.role().equals(UserRole.OWNER)) {
+            return hotelRepository.findByIdAndOwner_IdAndIsActiveTrue(id, user.id())
+                    .map(this::mapperHotelToGetHotelResponse)
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khách sạn với ID: " + id));
+        }
+        return null;
     }
 
     private AdminHotelResponse mapperHotelToGetHotelResponse(Hotel h) {
@@ -67,18 +88,47 @@ public class AdminHotelService {
     }
 
     private AdminHotelResponse.RoomTypeResponse mapperRoomTypeToResponse(RoomType rt) {
+        boolean isOwner = SecurityUtil.getCurrentUser()
+                .map(user -> user.role().equals(UserRole.OWNER))
+                .orElse(false);
+
         return new AdminHotelResponse.RoomTypeResponse(
-                rt.getId(), rt.getName(), rt.getDescription(), rt.getCapacity(), rt.getPrice(),
-                rt.getUtilities().stream().map(u -> new AdminHotelResponse.RoomUtilityResponse(u.getId(), u.getName(), u.getIconCode())).collect(Collectors.toSet()),
-                rt.getImages().stream().map(i -> new AdminHotelResponse.RoomTypeImageResponse(i.getId(), i.getPath())).collect(Collectors.toSet()),
-                rt.getRoomDetails().stream().map(rd -> new AdminHotelResponse.RoomDetailResponse(rd.getId(), rd.getRoomCode(), rd.isActive())).collect(Collectors.toSet()),
-                rt.isActive());
+                rt.getId(),
+                rt.getName(),
+                rt.getDescription(),
+                rt.getCapacity(),
+                rt.getPrice(),
+                rt.getUtilities().stream()
+                        .filter(u -> !isOwner || u.isActive())
+                        .map(u -> new AdminHotelResponse.RoomUtilityResponse(u.getId(), u.getName(), u.getIconCode()))
+                        .collect(Collectors.toSet()),
+                rt.getImages().stream()
+                        .map(i -> new AdminHotelResponse.RoomTypeImageResponse(i.getId(), i.getPath()))
+                        .collect(Collectors.toSet()),
+                rt.getRoomDetails().stream()
+                        .filter(rd -> !isOwner || rd.isActive()) // <-- Lọc ở đây
+                        .map(rd -> new AdminHotelResponse.RoomDetailResponse(rd.getId(), rd.getRoomCode(), rd.isActive()))
+                        .collect(Collectors.toSet()),
+                rt.isActive()
+        );
     }
 
     @Transactional
     public ChangeActiveHotelResponse changeActive(ChangeActiveHotelRequest request) {
-        Hotel hotel = hotelRepository.findById(request.id())
-                .orElseThrow(() -> new NoSuchElementException("Hotel not found with ID: " + request.id()));
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+
+        Hotel hotel = null;
+
+        if(user.role().equals(UserRole.ADMIN)) {
+            hotel = hotelRepository.findById(request.id())
+                    .orElseThrow(() -> new NoSuchElementException("Hotel not found with ID: " + request.id()));
+        } else if(user.role().equals(UserRole.OWNER)) {
+            hotel = hotelRepository.findByIdAndOwner_IdAndIsActiveTrue(request.id(), user.id())
+                    .orElseThrow(() -> new NoSuchElementException("Hotel not found with ID: " + request.id()));
+        }
+
+        if(hotel == null) return new ChangeActiveHotelResponse(false, request.active());
 
         hotel.setActive(request.active());
 
@@ -87,8 +137,20 @@ public class AdminHotelService {
 
     @Transactional
     public ChangeActiveRoomTypeResponse changeActiveRoomType(ChangeActiveRoomTypeRequest request) {
-        RoomType roomType = roomTypeRepository.findById(request.id())
-                .orElseThrow(() -> new NoSuchElementException("Room Type not found with ID: " + request.id()));
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+
+        RoomType roomType = null;
+
+        if(user.role().equals(UserRole.ADMIN)) {
+            roomType = roomTypeRepository.findById(request.id())
+                    .orElseThrow(() -> new NoSuchElementException("Room Type not found with ID: " + request.id()));
+        } else if(user.role().equals(UserRole.OWNER)) {
+            roomType = roomTypeRepository.findByIdAndHotel_Owner_IdAndIsActiveTrue(request.id(), user.id())
+                    .orElseThrow(() -> new NoSuchElementException("Room Type not found with ID: " + request.id()));
+        }
+
+        if(roomType == null) return new ChangeActiveRoomTypeResponse(false, request.active());
 
         roomType.setActive(request.active());
 
@@ -119,8 +181,17 @@ public class AdminHotelService {
 
     @Transactional
     public AdminHotelResponse updateHotelInfo(UpdateHotelAdminRequest request) {
-        Hotel hotel = hotelRepository.findById(request.id()).orElseThrow(() ->
-                new NoSuchElementException("Không tìm thấy khách sạn với ID: " + request.id()));
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+        Hotel hotel = null;
+        if(user.role().equals(UserRole.ADMIN)) {
+            hotel = hotelRepository.findById(request.id()).orElseThrow(() ->
+                    new NoSuchElementException("Không tìm thấy khách sạn với ID: " + request.id()));
+        }  else if(user.role().equals(UserRole.OWNER)) {
+            hotel = hotelRepository.findByIdAndOwner_IdAndIsActiveTrue(request.id(), user.id()).orElseThrow(() ->
+                    new NoSuchElementException("Không tìm thấy khách sạn với ID: " + request.id()));
+        }
+        if (hotel == null) throw new NoSuchElementException("Không tìm thấy khách sạn với ID: " + request.id());
 
         hotel.setName(request.name());
         hotel.setDescription(request.description());
@@ -196,20 +267,42 @@ public class AdminHotelService {
         hotel.getRegulations().addAll(updatedRegulations);
 
         Hotel savedProduct = hotelRepository.save(hotel);
-        return mapperHotelToGetHotelResponse(savedProduct);
+        if(user.role().equals(UserRole.ADMIN)) {
+            return mapperHotelToGetHotelResponse(savedProduct);
+        } else {
+            return hotelRepository.findByIdAndOwner_IdAndIsActiveTrue(savedProduct.getId(), user.id())
+                    .map(this::mapperHotelToGetHotelResponse)
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khách sạn với ID: " + savedProduct.getId()));
+        }
     }
 
     @Transactional
     public AdminHotelResponse.RoomTypeResponse updateRoomType(UpdateRoomTypeAdminRequest req) {
-        RoomType roomType;
+        RoomType roomType = null;
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
 
         if (req.id() != null) {
-            roomType = roomTypeRepository.findById(req.id()).orElseThrow(() ->
-                    new NoSuchElementException("Không tìm thấy hạng phòng với ID: " + req.id()));
+            if (user.role().equals(UserRole.ADMIN)) {
+                roomType = roomTypeRepository.findById(req.id()).orElseThrow(() ->
+                        new NoSuchElementException("Không tìm thấy hạng phòng với ID: " + req.id()));
+            } else if (user.role().equals(UserRole.OWNER)) {
+                roomType = roomTypeRepository.findByIdAndHotel_Owner_IdAndIsActiveTrue(req.id(), user.id()).orElseThrow(() ->
+                        new NoSuchElementException("Không tìm thấy hạng phòng với ID: " + req.id()));
+            }
         } else {
             roomType = new RoomType();
-            Hotel hotel = hotelRepository.findById(req.hotelId()).orElseThrow(() ->
-                    new NoSuchElementException("Không tìm thấy khách sạn với ID: " + req.hotelId()));
+            Hotel hotel = null;
+            if (user.role().equals(UserRole.ADMIN)) {
+                hotel = hotelRepository.findById(req.hotelId()).orElseThrow(() ->
+                        new NoSuchElementException("Không tìm thấy khách sạn với ID: " + req.hotelId()));
+            } else if (user.role().equals(UserRole.OWNER)) {
+                hotel = hotelRepository.findByIdAndOwner_IdAndIsActiveTrue(req.hotelId(), user.id()).orElseThrow(() ->
+                        new NoSuchElementException("Không tìm thấy khách sạn với ID: " + req.hotelId()));
+            }
+
+            if (hotel == null) new NoSuchElementException("Không tìm thấy khách sạn với ID: " + req.hotelId());
+
             roomType.setHotel(hotel);
         }
 
@@ -254,16 +347,16 @@ public class AdminHotelService {
             roomType.setUtilities(utilities);
         }
 
-        List<RoomDetail> currentDetails = roomType.getRoomDetails();
+        Set<RoomDetail> currentDetails = roomType.getRoomDetails();
         if (currentDetails == null) {
-            currentDetails = new ArrayList<>();
+            currentDetails = new HashSet<>();
         }
 
         Map<UUID, RoomDetail> existingDetailsMap = currentDetails.stream()
                 .filter(d -> d.getId() != null)
                 .collect(Collectors.toMap(RoomDetail::getId, d -> d));
 
-        List<RoomDetail> updatedDetails = new ArrayList<>();
+        Set<RoomDetail> updatedDetails = new HashSet<>();
         if (req.roomDetails() != null) {
             for (var detailReq : req.roomDetails()) {
                 RoomDetail detail;
@@ -295,43 +388,60 @@ public class AdminHotelService {
 
     @Transactional
     public Boolean createHotel(AddHotelRequest req) {
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+
         Hotel hotel = Hotel.builder()
                 .name(req.name())
                 .description(req.description())
                 .address(new Address())
                 .isActive(true)
                 .build();
+        if(user.role().equals(UserRole.OWNER)) {
+            User owner = userRepository.findUserByIdAndIsActive(user.id(), true);
+            if (owner == null) return false;
+            hotel.setOwner(owner);
+        }
         hotel = hotelRepository.save(hotel);
         return  hotel.getId() != null;
     }
 
     @Transactional(readOnly = true)
     public Page<AdminCommentResponse> getCommentsByHotelId(UUID hotelId, Pageable pageable) {
-        Page<AdminCommentResponse> result = commentRepository.findByHotel_Id(hotelId, pageable).map(c -> {
-            List<AdminCommentResponse.SentimentAspectResponse> aspects = commentReviewAspectRepository.findByComment_Id(c.getId()).stream().map(s ->
-                    AdminCommentResponse.SentimentAspectResponse.builder()
-                            .id(s.getId())
-                            .aspect(s.getAspect())
-                            .sentiment(s.getSentiment())
-                            .opinionWord(s.getOpinionWord())
-                            .createdAt(s.getCreatedAt())
-                            .updatedAt(s.getUpdatedAt())
-                            .build()).collect(Collectors.toList());
-
-            return AdminCommentResponse.builder()
-                    .id(c.getId())
-                    .email(c.getUser().getEmail())
-                    .avatarUrl(c.getUser().getAvatarUrl())
-                    .username(c.getUser().getUsername())
-                    .rating(c.getRating())
-                    .content(c.getContent())
-                    .sentimentAspects(aspects)
-                    .isActive(c.isActive())
-                    .createdAt(c.getCreatedAt())
-                    .updatedAt(c.getUpdatedAt())
-                    .build();
-        });
+        UserPrinciple user = SecurityUtil.getCurrentUser().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not logged in"));
+        Page<AdminCommentResponse> result = null;
+        if(user.role().equals(UserRole.ADMIN)) {
+            result = commentRepository.findByHotel_Id(hotelId, pageable).map(this::mapperCommentToResponse);
+        } else if (user.role().equals(UserRole.OWNER)) {
+            result = commentRepository.findByHotel_IdAndHotel_Owner_IdAndIsActiveTrue(hotelId, user.id(), pageable).map(this::mapperCommentToResponse);
+        }
         return result;
+    }
+
+    private AdminCommentResponse mapperCommentToResponse(Comment c) {
+        List<AdminCommentResponse.SentimentAspectResponse> aspects = commentReviewAspectRepository.findByComment_Id(c.getId()).stream().map(s ->
+                AdminCommentResponse.SentimentAspectResponse.builder()
+                        .id(s.getId())
+                        .aspect(s.getAspect())
+                        .sentiment(s.getSentiment())
+                        .opinionWord(s.getOpinionWord())
+                        .createdAt(s.getCreatedAt())
+                        .updatedAt(s.getUpdatedAt())
+                        .build()).collect(Collectors.toList());
+
+        return AdminCommentResponse.builder()
+                .id(c.getId())
+                .email(c.getUser().getEmail())
+                .avatarUrl(c.getUser().getAvatarUrl())
+                .username(c.getUser().getUsername())
+                .rating(c.getRating())
+                .content(c.getContent())
+                .sentimentAspects(aspects)
+                .isActive(c.isActive())
+                .createdAt(c.getCreatedAt())
+                .updatedAt(c.getUpdatedAt())
+                .build();
     }
 
     @Transactional

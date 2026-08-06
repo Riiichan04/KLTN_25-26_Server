@@ -199,7 +199,7 @@ public class IoHotelService {
                 }
 
                 // Sinh RoomDetail ngẫu nhiên
-                List<RoomDetail> details = new ArrayList<>();
+                Set<RoomDetail> details = new HashSet<>();
                 for (int i = 0; i < rand.nextInt(4) + 2; i++) {
                     RoomDetail rd = new RoomDetail();
                     rd.setRoomCode("R-" + UUID.randomUUID().toString().substring(0, 6));

@@ -1,4 +1,4 @@
-package vn.id.nonglam.kltn.kltn.controllers.admin;
+package vn.id.nonglam.kltn.kltn.controllers.owner;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/admin/hotels")
+@RequestMapping("/owner/hotels")
 @RequiredArgsConstructor
-public class HotelManagementController {
+public class OwnerHotelManagementController {
     private final AdminHotelService adminHotelService;
 
     @PostMapping("/create")
@@ -49,11 +49,6 @@ public class HotelManagementController {
     public ResponseEntity<ChangeActiveHotelResponse> changeActive(
             @RequestBody ChangeActiveHotelRequest request) {
         return ResponseEntity.ok(adminHotelService.changeActive(request));
-    }
-
-    @PatchMapping("/owner")
-    public ResponseEntity<AdminHotelResponse.OwnerResponse> changeOwner(@RequestBody ChangeOwnerHotelRequest request) {
-        return ResponseEntity.ok(adminHotelService.changeOwner(request));
     }
 
     @GetMapping("/utilities")
@@ -88,10 +83,5 @@ public class HotelManagementController {
             direction = Sort.Direction.DESC
     ) Pageable pageable) {
         return ResponseEntity.ok(adminHotelService.getCommentsByHotelId(id, pageable));
-    }
-
-    @PatchMapping("/comments/active/{id}")
-    public ResponseEntity<Boolean> changeActiveComment(@PathVariable UUID id, @RequestBody Boolean active) {
-        return ResponseEntity.ok(adminHotelService.changeActiveComment(id, active));
     }
 }

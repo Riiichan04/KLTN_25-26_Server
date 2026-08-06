@@ -54,6 +54,17 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Page<Order> findAll(@Param("keyword") String keyword, @Param("startDate") LocalDateTime startDate,
                         @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
+    @Query("""
+        select o from Order o left join o.hotel h
+        where h.owner.id = :ownerId and h.isActive = true and h.name ilike concat('%', :keyword, '%')
+        and (:startDate is null or o.createdAt >= :startDate)
+        and (:endDate is null or o.createdAt <= :endDate)
+        and (:status is null or o.orderStatus = :status)
+    """)
+    @EntityGraph(attributePaths = {"hotel", "hotel.owner", "user"})
+    Page<Order> findAllOwnerOrder(@Param("keyword") String keyword, @Param("ownerId") UUID ownerId, @Param("status") OrderStatus status, @Param("startDate") LocalDateTime startDate,
+                        @Param("endDate") LocalDateTime endDate, Pageable pageable);
+
     @Modifying
     @Query("UPDATE Order o SET o.orderStatus = :status, o.updatedAt = :updatedAt WHERE o.id = :id")
     int updateStatusOnly(@Param("id") UUID id, @Param("status") OrderStatus status, @Param("updatedAt") LocalDateTime updatedAt);

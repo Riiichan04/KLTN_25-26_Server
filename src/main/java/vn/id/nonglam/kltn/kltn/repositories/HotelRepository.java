@@ -100,13 +100,19 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
 
     @EntityGraph(attributePaths = {"address", "roomTypes", "roomTypes.images", "roomTypes.utilities", "utilities"})
     @Query("""
-        SELECT h FROM Hotel h 
-        LEFT JOIN h.address a WITH a.isActive = true
-        LEFT JOIN h.roomTypes r WITH r.isActive = true 
-        LEFT JOIN r.utilities ru WITH ru.isActive = true
-        LEFT JOIN h.utilities u WITH u.isActive = true
-        WHERE h.id = :id 
-        AND h.isActive = true
+    SELECT DISTINCT h FROM Hotel h 
+    LEFT JOIN FETCH h.address a 
+    LEFT JOIN FETCH h.utilities u 
+    LEFT JOIN FETCH h.roomTypes r 
+    LEFT JOIN FETCH r.utilities ru 
+    LEFT JOIN FETCH r.roomDetails t 
+    WHERE h.id = :id 
+      AND h.isActive = true 
+      AND (a IS NULL OR a.isActive = true)
+      AND (u IS NULL OR u.isActive = true)
+      AND (r IS NULL OR r.isActive = true)
+      AND (ru IS NULL OR ru.isActive = true)
+      AND (t IS NULL OR t.isActive = true)
 """)
     Hotel getHotelById(@Param("id") UUID id);
 
@@ -136,4 +142,40 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
     List<Hotel> findByIsActiveTrue();
 
     long countByIsActiveTrue();
+
+    @Query("""
+    SELECT 
+    h.id AS id, 
+    h.name AS name, 
+    h.thumbnail AS thumbnail, 
+    a.street AS street, 
+    a.ward AS ward, 
+    a.province AS province, 
+    h.viewCount AS viewCount, 
+    h.isActive AS isActive
+    FROM Hotel h 
+    JOIN h.owner o
+    LEFT JOIN h.address a 
+    WHERE h.isActive = true and h.name ILIKE concat('%', :keyword, '%') and o.id = :ownerId
+""")
+    Page<GetAdminSnapshotHotelResponse> getHotelsByOwnerId(@Param("keyword") String keyword, @Param("ownerId") UUID ownerId, Pageable pageable);
+
+    @Query("""
+    SELECT DISTINCT h FROM Hotel h 
+    LEFT JOIN FETCH h.address a 
+    LEFT JOIN FETCH h.utilities u 
+    LEFT JOIN FETCH h.roomTypes r 
+    LEFT JOIN FETCH r.utilities ru 
+    LEFT JOIN FETCH r.roomDetails t 
+    WHERE h.id = :id 
+      AND h.owner.id = :ownerId 
+      AND h.isActive = true 
+      AND (a IS NULL OR a.isActive = true)
+      AND (u IS NULL OR u.isActive = true)
+      AND (r IS NULL OR r.isActive = true)
+      AND (ru IS NULL OR ru.isActive = true)
+      AND (t IS NULL OR t.isActive = true)
+""")
+    Optional<Hotel> findByIdAndOwner_IdAndIsActiveTrue(@Param("id") UUID id, @Param("ownerId") UUID ownerId);
+
 }

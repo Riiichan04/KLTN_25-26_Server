@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payment/vnpay-return", "/api/payment/vnpay-ipn").permitAll()
                         .requestMatchers("/booking/choose-room").permitAll()
                         .requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
+                        .requestMatchers("/owner/**").hasRole(UserRole.OWNER.name())
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

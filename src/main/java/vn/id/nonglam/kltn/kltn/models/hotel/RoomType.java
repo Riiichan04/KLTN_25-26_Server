@@ -9,7 +9,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,7 +53,7 @@ public class RoomType {
 
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("roomType")
-    private List<RoomDetail> roomDetails;
+    private Set<RoomDetail> roomDetails;
 
     @Column
     private boolean isActive;

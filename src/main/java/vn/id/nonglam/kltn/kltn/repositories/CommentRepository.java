@@ -20,6 +20,9 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
     @EntityGraph(attributePaths = {"user"})
     Page<Comment> findByHotel_Id(UUID hotelId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"user"})
+    Page<Comment> findByHotel_IdAndHotel_Owner_IdAndIsActiveTrue(UUID hotelId, UUID ownerId, Pageable pageable);
+
     Comment findCommentById(UUID id);
     int countByHotelIdAndIsActiveTrue(UUID hotelId);
     @Query("""

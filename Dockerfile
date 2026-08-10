@@ -3,7 +3,6 @@ WORKDIR /app
 
 COPY build.gradle settings.gradle gradle.properties ./
 COPY gradle ./gradle
-COPY libs.versions.toml ./gradle/
 
 COPY src ./src
 

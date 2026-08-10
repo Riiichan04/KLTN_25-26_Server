@@ -98,22 +98,26 @@ public interface HotelRepository extends JpaRepository<Hotel, UUID> {
 """)
     Optional<CardHotelResponse> findHotelSnapshotById(@Param("hotelId") UUID hotelId);
 
+//    @EntityGraph(attributePaths = {"address", "roomTypes", "roomTypes.images", "roomTypes.utilities", "utilities"})
+//    @Query("""
+//    SELECT DISTINCT h FROM Hotel h
+//    LEFT JOIN FETCH h.address a
+//    LEFT JOIN FETCH h.utilities u
+//    LEFT JOIN FETCH h.roomTypes r
+//    LEFT JOIN FETCH r.utilities ru
+//    LEFT JOIN FETCH r.roomDetails t
+//    WHERE h.id = :id
+//      AND h.isActive = true
+//      AND (a IS NULL OR a.isActive = true)
+//      AND (u IS NULL OR u.isActive = true)
+//      AND (r IS NULL OR r.isActive = true)
+//      AND (ru IS NULL OR ru.isActive = true)
+//      AND (t IS NULL OR t.isActive = true)
+//""")
+//    Hotel getHotelById(@Param("id") UUID id);
+
     @EntityGraph(attributePaths = {"address", "roomTypes", "roomTypes.images", "roomTypes.utilities", "utilities"})
-    @Query("""
-    SELECT DISTINCT h FROM Hotel h 
-    LEFT JOIN FETCH h.address a 
-    LEFT JOIN FETCH h.utilities u 
-    LEFT JOIN FETCH h.roomTypes r 
-    LEFT JOIN FETCH r.utilities ru 
-    LEFT JOIN FETCH r.roomDetails t 
-    WHERE h.id = :id 
-      AND h.isActive = true 
-      AND (a IS NULL OR a.isActive = true)
-      AND (u IS NULL OR u.isActive = true)
-      AND (r IS NULL OR r.isActive = true)
-      AND (ru IS NULL OR ru.isActive = true)
-      AND (t IS NULL OR t.isActive = true)
-""")
+    @Query("SELECT h FROM Hotel h WHERE h.id = :id AND h.isActive = true")
     Hotel getHotelById(@Param("id") UUID id);
 
     @Query("""

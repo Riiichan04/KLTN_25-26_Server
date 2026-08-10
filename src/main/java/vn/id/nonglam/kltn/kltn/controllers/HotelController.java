@@ -20,6 +20,7 @@ public class HotelController {
 
     @GetMapping("/get-hotel-detail")
     public ResponseEntity<HotelResponse> getHotelDetail(@RequestParam UUID id) {
+        System.out.println(id);
         return ResponseEntity.ok(hotelService.getHotelById(id));
     }
 

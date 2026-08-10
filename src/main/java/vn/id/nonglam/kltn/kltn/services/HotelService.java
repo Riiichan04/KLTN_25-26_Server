@@ -26,6 +26,7 @@ public class HotelService {
 
     public HotelResponse getHotelById(UUID id) {
         Hotel hotel = hotelRepository.getHotelById(id);
+        System.out.println(hotel);
         if(hotel == null) return null;
         return mapper(hotel);
     }

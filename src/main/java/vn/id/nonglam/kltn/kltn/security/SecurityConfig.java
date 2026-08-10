@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/booking/choose-room").permitAll()
                         .requestMatchers("/admin/**").hasRole(UserRole.ADMIN.name())
                         .requestMatchers("/owner/**").hasRole(UserRole.OWNER.name())
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

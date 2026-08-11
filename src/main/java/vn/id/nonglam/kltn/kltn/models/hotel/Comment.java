@@ -54,6 +54,7 @@ public class Comment {
 
     @PrePersist
     protected void onCreate() {
+        this.isActive = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

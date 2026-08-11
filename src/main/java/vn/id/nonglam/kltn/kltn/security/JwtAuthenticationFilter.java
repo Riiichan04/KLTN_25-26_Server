@@ -28,8 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            filterChain.doFilter(request, response);
+//        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+
+        if (request.getMethod().equals("OPTIONS")) {
+            response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
